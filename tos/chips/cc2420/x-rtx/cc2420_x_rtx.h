@@ -11,6 +11,7 @@
 #define RX_BUFFER_SIZE         7
 /** Length of IEEE 802.15.4 ACK frame **/
 #define ACK_LENGTH             5
+#define OPPORTUNISTIC_ROUTING_ADDR 0xFFFE;
 /** Interval between two adjacent preamble packets transmission **/
 /** 128 us turnaround + 160 us 5 bytes data transmission **/
 #define ACK_WAITING_PERIOD     288

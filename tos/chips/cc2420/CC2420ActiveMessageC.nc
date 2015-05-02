@@ -69,7 +69,7 @@ configuration CC2420ActiveMessageC {
 }
 implementation {
   enum {
-    CC2420_AM_SEND_ID     = unique(RADIO_SEND_RESOURCE),
+    CC2420_AM_SEND_ID = unique(RADIO_SEND_RESOURCE),
   };
 
   components CC2420RadioC as Radio;

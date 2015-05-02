@@ -175,7 +175,6 @@ static inline void radio_flush_rx() {
 // TX_FIFO FLUSH
 static inline void radio_flush_tx() {
   strobe(CC2420_SFLUSHTX);
-  radio_flush_rx();
 }
 // Radio Initialization
 void cc2420_init() {
