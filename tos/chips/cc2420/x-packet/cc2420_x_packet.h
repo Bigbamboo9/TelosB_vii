@@ -38,8 +38,10 @@ static inline void set_packet_header(message_t* m, uint8_t dsn) {
 }
 
 static inline void set_packet_dest(message_t* m, am_addr_t dest) {
+  rtx_setting_t* p_ts = get_packet_setting(m);
   cc2420_header_t* p_header = (cc2420_header_t*)get_packet_header(m);
   p_header->dest = dest;
+  p_ts->addr = dest;
 }
 
 static inline void set_packet_ci(message_t* m, uint8_t hop) {
@@ -52,6 +54,15 @@ static inline void set_packet_bulk(message_t* m, uint8_t size) {
   rtx_setting_t* p_ts = get_packet_setting(m);
   p_ts->batched = TRUE;
   p_ts->size = size;
+}
+
+static inline void set_packet_opportunistic(message_t* m, uint16_t metric, uint16_t progress) {
+  rtx_setting_t* p_ts = get_packet_setting(m);
+  cc2420_header_t* p_header = (cc2420_header_t*)get_packet_header(m);
+  p_header->dest = OPPORTUNISTIC_ROUTING_ADDR;
+  p_ts->addr = OPPORTUNISTIC_ROUTING_ADDR;
+  p_ts->metric = metric;
+  p_ts->progress = progress;
 }
 
 static inline void set_payload_length(message_t* m, uint8_t len) {

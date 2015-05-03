@@ -8,6 +8,7 @@ module CC2420xTRxP {
   provides interface LplSend;
   provides interface LplReceive;
   provides interface LplTime;
+  provides interface OppoRouting;
   provides interface Msp430TimerEvent as VectorTimerB1;
 } implementation {
   /** status variable **/
@@ -29,7 +30,7 @@ module CC2420xTRxP {
   // abortion duration record
   uint16_t abortion_duration;
   rtx_time_compensation_t rtx_time;
-
+  // buffer the value of TBCCR1
   uint16_t tb1_buffer;
 
   /** signal detection variable **/
@@ -56,6 +57,8 @@ module CC2420xTRxP {
   uint8_t rx_readbytes;
   // the rx setting of current receive process
   rtx_setting_t rx_setting;
+  // local opportunistic routing metric
+  uint16_t local_metric;
 
   command error_t Init.init() {
     rtx_status = S_RTX_IDLE;
@@ -238,6 +241,10 @@ module CC2420xTRxP {
               TBCCR5 = TBCCR1 + LISTENING_TAIL;
               detect_duration = TBCCR1;
               TBCCTL5 = CCIE;
+            } else {
+              radio_flush_tx()
+              rtx_status = S_RX_DETECT;
+              cc2420_signal_detect(TBCCR1);
             }
           } else if (p_tx_buf != null) {
             // nothing will be received further, start to transmit
@@ -250,8 +257,8 @@ module CC2420xTRxP {
             rtx_time.pkt_ack++;
             ack_time_update();
             signal LplTime.timeRadio(&rtx_time);
-            if (!m_rx_buf.received) {
-              signal LplReceive.receive(&rx_buf[m_rx_buf.pos_buf], m_rx_buf.max_size - m_rx_buf.empty_size);
+            if (m_rx_buf.occ_size > 0) {
+              signal LplReceive.receive(&rx_buf[m_rx_buf.pos_buf], m_rx_buf.occ_size);
             }
             if (p_tx_buf != NULL) {
               signal LplSend.sendDone(p_tx_buf, *tx_setting, SUCCESS);
@@ -279,6 +286,10 @@ module CC2420xTRxP {
               TBCCR5 = TBCCR1 + LISTENING_TAIL;
               detect_duration = TBCCR1;
               TBCCTL5 = CCIE;
+            } else {
+              radio_flush_tx()
+              rtx_status = S_RX_DETECT;
+              cc2420_signal_detect(TBCCR1);
             }
           } else if (p_tx_buf != null) {
             rtx_status = S_TX_SFD;
@@ -288,7 +299,7 @@ module CC2420xTRxP {
             rtx_time.pkt_ack++;
             ack_time_update(&rtx_time, ack_duration);
             signal LplTime.timeRadio(&rtx_time);
-            if (!m_rx_buf.received) {
+            if (m_rx_buf.received) {
               signal LplReceive.receive(&rx_buf[m_rx_buf.pos_buf], m_rx_buf.max_size - m_rx_buf.empty_size);
             }
             if (p_tx_buf != NULL) {
@@ -584,8 +595,8 @@ module CC2420xTRxP {
           rtx_status = S_RTX_IDLE;
           TBCCTL1 = CAP;
           signal LplTime.timeRadio(&rtx_time);
-          if (!m_rx_buf.received) {
-            signal LplReceive.receive(&rx_buf[m_rx_buf.pos_buf], m_rx_buf.max_size - m_rx_buf.empty_size);
+          if (m_rx_buf.occ_size > 0) {
+            signal LplReceive.receive(&rx_buf[m_rx_buf.pos_buf], m_rx_buf.occ_size);
           }
           if (p_tx_buf != NULL) {
             signal LplSend.sendDone(p_tx_buf, *tx_setting, SUCCESS);
@@ -629,7 +640,8 @@ module CC2420xTRxP {
         int pos_avr = pos_sum / pos_number;
         // PAPR is small so it is probably ZigBee. Start the tail timer.
         if (rssi_max - pos_avr < RSSI_PAPR_THRESHOLD) {
-          TBCCR5 = rtimer_arch_now_dco() + (rtx_time.pkt_rtx_time == 0) ? (packet_len * 32 + 200) * 4 : rtx_time.pkt_rtx_time;
+          //TBCCR5 = rtimer_arch_now_dco() + (rtx_time.pkt_rtx_time == 0) ? (packet_len * 32 + 200) * 4 : rtx_time.pkt_rtx_time;
+          TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
           TBCCTL5 = CCIE;
           return;
         }
@@ -637,7 +649,6 @@ module CC2420xTRxP {
           rtx_status = S_TX_SFD;
           cc2420_strobe_tx();
           cc2420_load_tx();
-          TBCCTL1 &= ~CCIFG;
         }
         if ( rtx_status == S_RX_DETECT ) {
           //TODO: signal LPL layer to sleep
@@ -659,16 +670,22 @@ module CC2420xTRxP {
           rtx_status = S_TX_SFD;
           cc2420_strobe_tx();
           cc2420_load_tx();
-          TBCCTL1 &= ~CCIFG;
         }
         if ( rtx_status == S_RX_DETECT) {
           //TODO: signal LPL layer to sleep
           detect_duration = rtimer_arch_now_dco() - detect_duration;
-          if (rtx_time.channel_detection == 0) {
-            rtx_time.channel_detection = detect_duration;
-          } else {
-            rtx_time.channel_detection = (rtx_time.channel_detection * 8 + detect_duration * 2) / 10;
+          rtx_time.channel_detection += detect_duration;
+          rtx_status = S_RTX_IDLE;
+          TBCCTL1 = CAP;
+          signal LplTime.timeRadio(&rtx_time);
+          if (m_rx_buf.occ_size > 0) {
+            signal LplReceive.receive(&rx_buf[m_rx_buf.pos_buf], m_rx_buf.occ_size);
           }
+          if (p_tx_buf != NULL) {
+            signal LplSend.sendDone(p_tx_buf, *tx_setting, SUCCESS);
+            p_tx_buf = NULL;
+          }
+          signal LplTime.timeCompensated(rtimer_arch_now_dco() - TBCCR1);
         }
       }
       return;
@@ -728,9 +745,11 @@ module CC2420xTRxP {
       rtx_setting_t* m_ptr_setting = (rtx_setting_t*)get_packet_setting(m_rx_buf.p_rx_buf);
       // receive the data, acknowledge the packet, else abort the ongoing ack transmission
       if ((!m_ptr_setting.ack) 
-       || ((m_ptr_setting.addr != TOS_NODE_ID) && (!m_ptr_setting.ci))
-       || ((m_ptr_setting.addr != OPPORTUNISTIC_ROUTING_ADDR))) {
+       || ((m_ptr_setting.addr != TOS_NODE_ID) && (m_ptr_setting.addr != OPPORTUNISTIC_ROUTING_ADDR) && (m_ptr_setting->metric - local_metric > m_ptr_setting->progress))
+       || (!(m_ptr_setting.ci && (m_ptr_setting->hop != 0)))) {
         radio_flush_tx();
+        radio_flush_rx();
+        return;
         // the ack waiting timer is running, deal with this after ACK is transmitted
       }
       // duplicate check
@@ -743,7 +762,7 @@ module CC2420xTRxP {
       }
       if (!duplicate) {
         // set the rx setting
-        m_ptr_setting->hop++;
+        m_ptr_setting->hop--;
         memcpy(&rx_setting, m_ptr_setting, sizeof(rtx_setting_t));
         // buffer swapping
         m_rx_buf.occ_size++;
@@ -763,6 +782,8 @@ module CC2420xTRxP {
   
   static inline void cc2420_ack_strobe_rx() {
     strobe( CC2420_SACK );
+    TBCCTL1 &= ~CCIFG;
+    radio_flush_rx();
     turn_around = rtimer_arch_now_dco();
   }
 
@@ -772,6 +793,8 @@ module CC2420xTRxP {
 
   static inline void cc2420_strobe_tx() {
     strobe( CC2420_STXON );
+    radio_flush_rx();
+    TBCCTL1 &= ~CCIFG;
   }
 
   static inline void cc2420_ack_wait_tx() {
@@ -905,6 +928,14 @@ module CC2420xTRxP {
       detect_duration = TBCCR1;
       TBCCTL5 = CCIE;
     }
+  }
+
+  command void OppoRouting.setLocalMetric(uint16_t metric) {
+    atomic local_metric = metric;
+  }
+
+  command void OppoRouting.setOppoRouting(message_t* m, uint16_t metric, uint16_t progress) {
+    set_packet_opportunistic(m, metric, progress);
   }
 
   default event LplSend.sendDone(message_t* msg, rtx_setting_t* ts, error_t error) {}

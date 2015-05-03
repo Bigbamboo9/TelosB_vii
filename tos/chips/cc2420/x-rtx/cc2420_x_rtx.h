@@ -177,7 +177,7 @@ static inline void msp430_sync_dco() {
 
 
  /** Detect the potential ongoing packet transmission by being awake and checking SFD for two adjacent SFD period **/
- static inline void cc2420_signal_detect();
+ static inline void cc2420_signal_detect(uint16_t time);
  /** Start to read data from RxFIFO after the SFD up edge is detected during receiving process **/
  static inline void cc2420_begin_rx();
  /** Finish the lefted data transfer, send ack back and determine the further settings after the SFD down edge is detected during receiving process **/

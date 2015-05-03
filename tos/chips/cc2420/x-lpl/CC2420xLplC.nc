@@ -3,6 +3,7 @@ configuration CC2420xLplC {
   provides interface Send;
   provides interface BulkSend;
   provides interface Receive;
+  provides interface OppoRouting;
   provides interface RadioTimerUpdate;
 } implementation {
   components MainC;
@@ -14,6 +15,7 @@ configuration CC2420xLplC {
   BulkSend = CC2420xLplP;
   Receive = CC2420xLplP;
   RadioTimerUpdate = CC2420xLplP;
+  OppoRouting = CC2420xRTxP;
 
   MainC->SoftwareInit -> CC2420xLplP;
   MainC->SoftwareInit -> CC2420xRTxP;
