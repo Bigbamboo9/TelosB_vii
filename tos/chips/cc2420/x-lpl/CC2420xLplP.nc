@@ -109,7 +109,7 @@ module CC2420xLplP {
     return get_packet_payload(msg);
   }
 
-  command error_t BulkSend.send(message_t* msg, uint8_t size, uint8_t len) {
+  command error_t BulkSend.send(message_t* msg, uint8_t len) {
     uint8_t i;
     
     if (lpl_status != LPL_X_IDLE) {
@@ -117,8 +117,9 @@ module CC2420xLplP {
     }
     call SleepTimer.stop();
     atomic {
+      rtx_setting_t* p_ts = get_packet_setting(msg);
+      uint8_t size = p_ts->size;
       lpl_status = LPL_X_TX;
-      set_packet_bulk(msg, size);
       for (i = 0; i < size; i++) {
         set_packet_header(msg+i, lpl_dsn);
         set_payload_length(msg+i, len);

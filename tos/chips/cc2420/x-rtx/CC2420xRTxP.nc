@@ -934,10 +934,6 @@ module CC2420xTRxP {
     atomic local_metric = metric;
   }
 
-  command void OppoRouting.setOppoRouting(message_t* m, uint16_t metric, uint16_t progress) {
-    set_packet_opportunistic(m, metric, progress);
-  }
-
   default event LplSend.sendDone(message_t* msg, rtx_setting_t* ts, error_t error) {}
   default event LplReceive.receive(message_t* msg, uint8_t size) {}
   default event LplTime.timeRadio(rtx_time_compensation_t* rtx_time) {}

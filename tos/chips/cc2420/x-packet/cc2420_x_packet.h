@@ -18,6 +18,25 @@ static inline uint8_t* get_packet_preamble_dsn(message_t* m) {
   return (get_packet_payload(m)-1);
 }
 
+static inline uint8_t* get_packet_metadata(message_t* m) {
+  return (uint8_t*)((uint8_t*)m + offsetof(message_t, metadata));
+}
+
+static inline uint8_t* get_packet_payloadLen(message_t* m) {
+  return *(get_packet_setting(m)-1);
+}
+
+static inline uint8_t get_packet_maxPayloadLen() {
+  return (CC2420_X_PACKET_SIZE-1-sizeof(rtx_setting_t));
+}
+
+static inline uint8_t get_packet_bulk(message_t* m) {
+  rtx_setting_t* p_ts = get_packet_setting(m);
+  if (p_ts->batched)
+    return p_ts->size;
+  return 0;
+}
+
 static inline void set_packet_header(message_t* m, uint8_t dsn) {
   cc2420_header_t* p_header = (cc2420_header_t*)get_packet_header(m);
   rtx_setting_t* p_ts = (rtx_setting_t*)get_packet_setting(m);
