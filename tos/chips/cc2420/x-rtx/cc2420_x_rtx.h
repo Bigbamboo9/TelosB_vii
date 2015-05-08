@@ -11,7 +11,7 @@
 #define RX_BUFFER_SIZE         7
 /** Length of IEEE 802.15.4 ACK frame **/
 #define ACK_LENGTH             5
-#define OPPORTUNISTIC_ROUTING_ADDR 0xFFFE;
+#define OPPORTUNISTIC_ROUTING_ADDR 0xFFFE
 /** Interval between two adjacent preamble packets transmission **/
 /** 128 us turnaround + 160 us 5 bytes data transmission **/
 #define ACK_WAITING_PERIOD     288
@@ -176,25 +176,25 @@ static inline void msp430_sync_dco() {
 }
 
 
- /** Detect the potential ongoing packet transmission by being awake and checking SFD for two adjacent SFD period **/
- static inline void cc2420_signal_detect(uint16_t time);
- /** Start to read data from RxFIFO after the SFD up edge is detected during receiving process **/
- static inline void cc2420_begin_rx();
- /** Finish the lefted data transfer, send ack back and determine the further settings after the SFD down edge is detected during receiving process **/
- static inline void cc2420_end_rx();
- /** Strobe the software ACK transmission **/
- static inline void cc2420_ack_strobe_rx();
- /** Finish the ack sending after the SFD down edge is detected during the receiving process **/
- static inline void cc2420_ack_end_rx();
- /** Load the data from memory to TxFIFO after the Tx strbe **/
- static inline void cc2420_load_tx();
- /** Strobe the TXON to initialize the transmission process **/
- static inline void cc2420_strobe_tx();
- /** ACK waiting after the falling edge SFD is detected during transmitting process **/
- static inline void cc2420_ack_wait_tx();
- /** falling edge SFD is detected, ACK has been received during transmission **/
- static inline void cc2420_ack_rx();
- /** dealing with the timing exception after ack receiving **/
- static inline void cc2420_ack_rx_except();
+/** Detect the potential ongoing packet transmission by being awake and checking SFD for two adjacent SFD period **/
+//static inline void cc2420_signal_detect(uint16_t time);
+/** Start to read data from RxFIFO after the SFD up edge is detected during receiving process **/
+//static inline void cc2420_begin_rx();
+/** Finish the lefted data transfer, send ack back and determine the further settings after the SFD down edge is detected during receiving process **/
+//static inline void cc2420_end_rx();
+/** Strobe the software ACK transmission **/
+//static inline void cc2420_ack_strobe_rx();
+/** Finish the ack sending after the SFD down edge is detected during the receiving process **/
+//static inline void cc2420_ack_end_rx();
+/** Load the data from memory to TxFIFO after the Tx strbe **/
+//static inline void cc2420_load_tx();
+/** Strobe the TXON to initialize the transmission process **/
+//static inline void cc2420_strobe_tx();
+/** ACK waiting after the falling edge SFD is detected during transmitting process **/
+//static inline void cc2420_ack_wait_tx();
+/** falling edge SFD is detected, ACK has been received during transmission **/
+//static inline void cc2420_ack_rx();
+/** dealing with the timing exception after ack receiving **/
+//static inline void cc2420_ack_rx_except();
 
 #endif

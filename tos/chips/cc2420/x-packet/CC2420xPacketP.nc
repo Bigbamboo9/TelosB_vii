@@ -4,7 +4,7 @@ module CC2420xPacketP {
   provides interface LplxPacket;
   provides interface AMPacket;
   provides interface Packet;
-  provides interface PacketAcknowledgements as Acks
+  provides interface PacketAcknowledgements as Acks;
 } implementation {
   /** Interface LplxPacket **/
   command void LplxPacket.setPacketCI(message_t* m, uint8_t hop) {
@@ -113,7 +113,7 @@ module CC2420xPacketP {
   command uint8_t Packet.maxPayloadLength() {
     return get_packet_maxPayloadLen();
   }
-  
+ 
   command void* Packet.getPayload(message_t* msg, uint8_t len) {
     if (len < get_packet_maxPayloadLen())
       return (void*)get_packet_payload(msg);

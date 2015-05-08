@@ -203,8 +203,11 @@ implementation
     return m_timers[num].dt;
   }
 
-  event void RadioTimerUpdate.triggerTimer() {
+  event void RadioTimerUpdate.triggerUpdate() {
     post updateFromTimer();
+  }
+
+  event void RadioTimerUpdate.counterUpdate(uint32_t count, uint16_t factor) {
   }
 
   default event void Timer.fired[uint8_t num]()

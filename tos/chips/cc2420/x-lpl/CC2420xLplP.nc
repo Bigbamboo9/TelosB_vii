@@ -17,7 +17,7 @@ module CC2420xLplP {
   uses interface Timer<TMilli> as SleepTimer;
   uses interface Random;
 
-  uses Leds;
+  uses interface Leds;
 } implementation {
   lpl_x_state_t lpl_status;
   interrupt_status_t ie_status;
@@ -58,7 +58,7 @@ module CC2420xLplP {
         disable_other_interrupts(&ie_status);
         // keep the dco accurate!
         msp430_sync_dco();
-        call LplReceive.rxInit();
+        call SubReceive.rxInit();
         radio_start_time = rtimer_arch_now_dco();
         cc2420_rx_start();
       }
@@ -79,7 +79,7 @@ module CC2420xLplP {
       disable_other_interrupts(&ie_status);
       // keep the dco accurate!
       msp430_sync_dco();
-      call LplReceive.rxInit();
+      call SubReceive.rxInit();
       cc2420_rx_start();
     }
     return (call SubSend.send(msg, &tx_status)) ;
@@ -117,7 +117,7 @@ module CC2420xLplP {
     }
     call SleepTimer.stop();
     atomic {
-      rtx_setting_t* p_ts = get_packet_setting(msg);
+      rtx_setting_t* p_ts = (rtx_setting_t*)get_packet_setting(msg);
       uint8_t size = p_ts->size;
       lpl_status = LPL_X_TX;
       for (i = 0; i < size; i++) {
@@ -127,7 +127,7 @@ module CC2420xLplP {
       }
       set_tx_setting(msg, &tx_status);
       disable_other_interrupts(&ie_status);
-      call LplReceive.rxInit();
+      call SubReceive.rxInit();
       cc2420_rx_start();
     }
     return (call SubSend.send(msg, &tx_status)) ;
@@ -165,7 +165,7 @@ module CC2420xLplP {
   event void SubReceive.receive(message_t* msg, uint8_t size) {
     // TODO: deal with the received data packets
     // it is possible to receive data during data transmission
-    uint8 i;
+    uint8_t i;
     if (lpl_status == LPL_X_RX) {
       atomic {
         radio_flush_rx();
@@ -182,15 +182,15 @@ module CC2420xLplP {
       return;
     atomic {
       cc2420_rx_stop();
-      radio_time_perround = (rtx_time.pkt_recv + rtx_time.pkt_send) * rtx_time.pkt_rtx_time
-                          + rtx_time.pkt_ack * rtx_time.ack_time
-                          + rtx_time.pkt_turnaround * rtx_time.turnaround_time
-                          + rtx_time.channel_detection;
-      rtx_time.radio_on_time += radio_time_perround;
-      rtx_time.tail_total_time += rtx_time.channel_detection;
-      rtx_time.rtx_total_time += (rtx_time.pkt_recv + rtx_time.pkt_send) * rtx_time.pkt_rtx_time;
-      rtx_time.ack_total_time += rtx_time.pkt_ack * rtx_time.ack_time;
-      rtx_time.turnaround_total_time += rtx_time.pkt_turnaround * rtx_time.turnaround_time;
+      radio_time_perround = (rtx_time->pkt_recv + rtx_time->pkt_send) * rtx_time->pkt_rtx_time
+                          + rtx_time->pkt_ack * rtx_time->ack_time
+                          + rtx_time->pkt_turnaround * rtx_time->turnaround_time
+                          + rtx_time->channel_detection;
+      rtx_time->radio_on_time += radio_time_perround;
+      rtx_time->tail_total_time += rtx_time->channel_detection;
+      rtx_time->rtx_total_time += (rtx_time->pkt_recv + rtx_time->pkt_send) * rtx_time->pkt_rtx_time;
+      rtx_time->ack_total_time += rtx_time->pkt_ack * rtx_time->ack_time;
+      rtx_time->turnaround_total_time += rtx_time->pkt_turnaround * rtx_time->turnaround_time;
     }
   }
 
@@ -199,7 +199,7 @@ module CC2420xLplP {
         return;
     atomic {
       // TODO: compensate the frozen timer
-      signal RadioTimerUpdate.counterUpdate(radio_time_perround+time+radio_start_time, rtx_time.calibration_factor);
+      signal RadioTimerUpdate.counterUpdate(radio_time_perround+time+radio_start_time, rtx_time->calibration_factor);
       signal RadioTimerUpdate.triggerUpdate();
       if (lpl_status == LPL_X_RX)
         call SleepTimer.startOneShot(CC2420_LPL_PERIOD);

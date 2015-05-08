@@ -1,4 +1,4 @@
 interface RadioTimerUpdate {
-  event void triggerTimer();
+  event void triggerUpdate();
   event void counterUpdate(uint32_t count, uint16_t factor);
 }

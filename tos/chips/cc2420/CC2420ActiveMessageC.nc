@@ -27,7 +27,7 @@ implementation {
   components CC2420ActiveMessageP as AM;
   components ActiveMessageAddressC;
   components CC2420xLplC;
-  components CC2420xPacketC;
+  components CC2420xPacketP;
 
   RadioControl = CC2420xLplC;
   OppoRouting = CC2420xLplC;
@@ -38,17 +38,17 @@ implementation {
   Receive = AM.Receive;
   Snoop = AM.Snoop;
 
-  LplxPacket = CC2420xPacketC;
-  AMPacket = CC2420xPacketC;
-  Packet = CC2420PacketC;
-  PacketAcknowledgements = CC2420xPacketC;
+  LplxPacket = CC2420xPacketP;
+  AMPacket = CC2420xPacketP;
+  Packet = CC2420xPacketP;
+  PacketAcknowledgements = CC2420xPacketP;
 
   AM.SubSend -> CC2420xLplC;
   AM.SubReceive -> CC2420xLplC;
   AM.BulkSend -> CC2420xLplC;
-  AM.LplxPacket -> CC2420xPacketC;
-  AM.Packet -> CC2420xPacketC;
-  AM.AMPacket -> CC2420xPacketC;
+  AM.LplxPacket -> CC2420xPacketP;
+  AM.Packet -> CC2420xPacketP;
+  AM.AMPacket -> CC2420xPacketP;
   
   components LedsC;
   AM.Leds -> LedsC;

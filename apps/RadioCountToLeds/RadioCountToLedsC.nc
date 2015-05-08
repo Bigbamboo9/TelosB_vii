@@ -49,10 +49,9 @@ module RadioCountToLedsC @safe() {
     interface Boot;
     interface Receive;
     interface AMSend;
-    // interface Timer<TMilli> as MilliTimer;
-    interface Timer<TMicro> as MilliTimer;
-    interface LocalTime<TMicro> as LocalTime;
-    interface SplitControl as AMControl;
+    interface Timer<TMilli> as MilliTimer;
+    interface LocalTime<TMilli>;
+    interface StdControl as AMControl;
     interface Packet;
   }
 }
@@ -62,72 +61,47 @@ implementation {
 
   bool locked;
   uint16_t counter = 0;
-
-  task void nullTask() {
-    post nullTask();
-  } 
  
   event void Boot.booted() {
+    locked = FALSE;
     call AMControl.start();
-    post nullTask();
+    call MilliTimer.startPeriodic(1024);
   }
-
-  event void AMControl.startDone(error_t err) {
-    if (err == SUCCESS) {
-      call MilliTimer.startPeriodic(250000);
-    }
-    else {
-      call AMControl.start();
-    }
-  }
-
-  event void AMControl.stopDone(error_t err) {
-    // do nothing
-  }
-  
+ 
   event void MilliTimer.fired() {
     counter++;
-    dbg("RadioCountToLedsC", "RadioCountToLedsC: timer fired, counter is %hu.\n", counter);
-    if (locked) {
+    if (locked)
       return;
-    }
     else {
       radio_count_msg_t* rcm = (radio_count_msg_t*)call Packet.getPayload(&packet, sizeof(radio_count_msg_t));
-      if (rcm == NULL) {
+      if (rcm == NULL)
 	return;
-      }
 
       rcm->counter = counter;
       rcm->time = call LocalTime.get();
-      if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(radio_count_msg_t)) == SUCCESS) {
-	dbg("RadioCountToLedsC", "RadioCountToLedsC: packet sent.\n", counter);	
-	locked = TRUE;
-      }
+      if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(radio_count_msg_t)) == SUCCESS)
+        locked = TRUE;
     }
   }
 
-  event message_t* Receive.receive(message_t* bufPtr, 
-				   void* payload, uint8_t len) {
-    dbg("RadioCountToLedsC", "Received packet of length %hhu.\n", len);
-    if (len != sizeof(radio_count_msg_t)) {return bufPtr;}
+  event message_t* Receive.receive(message_t* bufPtr, void* payload, uint8_t len) {
+    if (len != sizeof(radio_count_msg_t)) 
+      return bufPtr;
     else {
       radio_count_msg_t* rcm = (radio_count_msg_t*)payload;
       if (rcm->counter & 0x1) {
 	call Leds.led0On();
-      }
-      else {
+      } else {
 	call Leds.led0Off();
       }
       if (rcm->counter & 0x2) {
 	call Leds.led1On();
-      }
-      else {
+      } else {
 	call Leds.led1Off();
       }
       if (rcm->counter & 0x4) {
 	call Leds.led2On();
-      }
-      else {
+      } else {
 	call Leds.led2Off();
       }
       return bufPtr;
@@ -139,7 +113,6 @@ implementation {
       locked = FALSE;
     }
   }
-
 }
 
 

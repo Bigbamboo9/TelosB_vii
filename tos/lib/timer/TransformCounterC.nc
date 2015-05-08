@@ -57,7 +57,7 @@ generic module TransformCounterC(
   typedef from_precision_tag,
   typedef from_size_type @integer(),
   uint8_t bit_shift_right,
-  typedef upper_count_type @integer()
+  typedef upper_count_type @integer(),
   bool isdco) @safe()
 {
   provides interface Counter<to_precision_tag,to_size_type> as Counter;
@@ -147,16 +147,16 @@ implementation
     atomic {
       if (!isdco) {
         // factor is approximate 128
-        upper_counter_type add_new = (count >> 7) >> (8 * sizeof(from_size_type));
-        upper_counter_type i;
+        upper_count_type add_new = (count >> 7) >> (8 * sizeof(from_size_type));
+        upper_count_type i;
         for (i = 0; i < add_new; i++) {
           m_upper++;
           if ((m_upper & OVERFLOW_MASK) == 0)
             signal Counter.overflow();
         }
       } else {
-        upper_counter_type add_new = count >> (8 * sizeof(from_size_type));
-        upper_counter_type i;
+        upper_count_type add_new = count >> (8 * sizeof(from_size_type));
+        upper_count_type i;
         for (i = 0; i < add_new; i++) {
           m_upper++;
           if ((m_upper & OVERFLOW_MASK) == 0)
@@ -165,5 +165,7 @@ implementation
       }
     }
   }
+  
+  event void RadioTimerUpdate.triggerUpdate() { }
 }
 

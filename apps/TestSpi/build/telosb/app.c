@@ -187,9 +187,9 @@ typedef int32_t ufs_daddr_t;
 typedef int32_t ufs_time_t;
 typedef u_int32_t uid_t;
 # 44 "/usr/bin/../lib/gcc/msp430/4.6.3/../../../../msp430/include/string.h" 3
-extern void *memset(void *arg_0x2afd272ab980, int arg_0x2afd272abbe8, size_t arg_0x2afd272aa020);
+extern void *memset(void *arg_0x2acebad19980, int arg_0x2acebad19be8, size_t arg_0x2acebad18020);
 #line 65
-extern void *memset(void *arg_0x2afd272bcb10, int arg_0x2afd272bcd78, size_t arg_0x2afd272c3060);
+extern void *memset(void *arg_0x2acebad2ab10, int arg_0x2acebad2ad78, size_t arg_0x2acebad31060);
 # 62 "/usr/bin/../lib/gcc/msp430/4.6.3/../../../../msp430/include/stdlib.h" 3
 #line 59
 typedef struct __nesc_unnamed4242 {
@@ -344,7 +344,7 @@ struct _reent {
 
   int __sdidinit;
 
-  void (*__cleanup)(struct _reent *arg_0x2afd272ff290);
+  void (*__cleanup)(struct _reent *arg_0x2acebad6d290);
 
 
   struct _Bigint *_result;
@@ -384,7 +384,7 @@ struct _reent {
   struct _atexit _atexit0;
 
 
-  void (**_sig_func)(int arg_0x2afd27304300);
+  void (**_sig_func)(int arg_0x2acebad72300);
 
 
 
@@ -1317,8 +1317,8 @@ typedef nx_struct message_t {
   nx_uint8_t footer[sizeof(message_footer_t )];
   nx_uint8_t metadata[sizeof(message_metadata_t )];
 } __attribute__((packed)) message_t;
-# 66 "../../tos/chips/cc2420/x-rtx/cc2420_x_rtx.h"
-#line 53
+# 67 "../../tos/chips/cc2420/x-rtx/cc2420_x_rtx.h"
+#line 54
 typedef enum __nesc_unnamed4265 {
   S_RTX_IDLE, 
 
@@ -1333,8 +1333,8 @@ typedef enum __nesc_unnamed4265 {
   S_CI_SFD, 
   S_CI_ACK
 } cc2420_rtx_state_t;
-#line 84
-#line 68
+#line 85
+#line 69
 typedef struct __nesc_unnamed4266 {
 
   bool batched;
@@ -1359,7 +1359,7 @@ typedef struct __nesc_unnamed4266 {
 
 
 
-#line 86
+#line 87
 typedef struct __nesc_unnamed4267 {
   bool received;
   uint8_t max_size;
@@ -1367,8 +1367,8 @@ typedef struct __nesc_unnamed4267 {
   uint8_t pos_buf;
   message_t *p_rx_buf;
 } rx_buffer_t;
-#line 116
-#line 94
+#line 117
+#line 95
 typedef struct __nesc_unnamed4268 {
 
   uint16_t calibration_factor;
@@ -1446,9 +1446,18 @@ static __inline void cc2420_sec_setting();
 static __inline void cc2420_io_setting();
 #line 169
 static __inline void radio_flush_rx();
-#line 181
+
+
+
+
+
+
+
+
+
+
 static inline void cc2420_init();
-#line 219
+#line 218
 static __inline void cc2420_rx_start();
 # 62 "/opt/tinyos-main-read-only/tos/interfaces/Init.nc"
 static error_t PlatformP__Init__init(void );
@@ -1485,7 +1494,7 @@ static void /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__VectorTimerX1__fired(v
 #line 28
 static void /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Event__default__fired(
 # 40 "../../tos/chips/msp430/timer/Msp430TimerP.nc"
-uint8_t arg_0x2afd278ac458);
+uint8_t arg_0x2acebb31a458);
 # 28 "../../tos/chips/msp430/timer/Msp430TimerEvent.nc"
 static void /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__VectorTimerX0__fired(void );
 #line 28
@@ -1495,7 +1504,7 @@ static void /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__VectorTimerX1__fired(v
 #line 28
 static void /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__Event__default__fired(
 # 40 "../../tos/chips/msp430/timer/Msp430TimerP.nc"
-uint8_t arg_0x2afd278ac458);
+uint8_t arg_0x2acebb31a458);
 # 33 "../../tos/chips/msp430/timer/Msp430Capture.nc"
 static uint16_t /*Msp430TimerC.Msp430TimerA0*/Msp430TimerCapComP__0__Capture__getEvent(void );
 #line 75
@@ -1548,7 +1557,7 @@ static void /*Msp430TimerC.Msp430TimerB0*/Msp430TimerCapComP__3__Timer__overflow
 static error_t LedsP__Init__init(void );
 # 56 "/opt/tinyos-main-read-only/tos/interfaces/Leds.nc"
 static void LedsP__Leds__led0On(void );
-# 85 "../../tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
+# 85 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
 static void /*HplMsp430GeneralIOC.P54*/HplMsp430GeneralIOP__36__IO__makeOutput(void );
 #line 48
 static void /*HplMsp430GeneralIOC.P54*/HplMsp430GeneralIOP__36__IO__set(void );
@@ -1592,7 +1601,7 @@ static error_t RealMainP__SoftwareInit__default__init(void );
 # 75 "/opt/tinyos-main-read-only/tos/interfaces/TaskBasic.nc"
 static void SchedulerBasicP__TaskBasic__default__runTask(
 # 56 "/opt/tinyos-main-read-only/tos/system/SchedulerBasicP.nc"
-uint8_t arg_0x2afd277c7650);
+uint8_t arg_0x2acebb235650);
 # 57 "/opt/tinyos-main-read-only/tos/interfaces/Scheduler.nc"
 static void SchedulerBasicP__Scheduler__init(void );
 #line 72
@@ -1687,7 +1696,7 @@ static inline error_t Msp430ClockP__Init__init(void );
 # 28 "../../tos/chips/msp430/timer/Msp430TimerEvent.nc"
 static void /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Event__fired(
 # 40 "../../tos/chips/msp430/timer/Msp430TimerP.nc"
-uint8_t arg_0x2afd278ac458);
+uint8_t arg_0x2acebb31a458);
 # 37 "../../tos/chips/msp430/timer/Msp430Timer.nc"
 static void /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Timer__overflow(void );
 # 115 "../../tos/chips/msp430/timer/Msp430TimerP.nc"
@@ -1715,7 +1724,7 @@ static inline void /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Event__default_
 # 28 "../../tos/chips/msp430/timer/Msp430TimerEvent.nc"
 static void /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__Event__fired(
 # 40 "../../tos/chips/msp430/timer/Msp430TimerP.nc"
-uint8_t arg_0x2afd278ac458);
+uint8_t arg_0x2acebb31a458);
 # 37 "../../tos/chips/msp430/timer/Msp430Timer.nc"
 static void /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__Timer__overflow(void );
 # 115 "../../tos/chips/msp430/timer/Msp430TimerP.nc"
@@ -1902,7 +1911,7 @@ static void LedsP__Led2__set(void );
 static inline error_t LedsP__Init__init(void );
 #line 74
 static inline void LedsP__Leds__led0On(void );
-# 56 "../../tos/chips/msp430/pins/HplMsp430GeneralIOP.nc"
+# 56 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/HplMsp430GeneralIOP.nc"
 static inline void /*HplMsp430GeneralIOC.P54*/HplMsp430GeneralIOP__36__IO__set(void );
 static inline void /*HplMsp430GeneralIOC.P54*/HplMsp430GeneralIOP__36__IO__clr(void );
 
@@ -1929,7 +1938,7 @@ static inline void /*HplMsp430GeneralIOC.P56*/HplMsp430GeneralIOP__38__IO__set(v
 
 
 static inline void /*HplMsp430GeneralIOC.P56*/HplMsp430GeneralIOP__38__IO__makeOutput(void );
-# 85 "../../tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
+# 85 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
 static void /*PlatformLedsC.Led0Impl*/Msp430GpioC__0__HplGeneralIO__makeOutput(void );
 #line 48
 static void /*PlatformLedsC.Led0Impl*/Msp430GpioC__0__HplGeneralIO__set(void );
@@ -1938,7 +1947,7 @@ static void /*PlatformLedsC.Led0Impl*/Msp430GpioC__0__HplGeneralIO__set(void );
 
 
 static void /*PlatformLedsC.Led0Impl*/Msp430GpioC__0__HplGeneralIO__clr(void );
-# 48 "../../tos/chips/msp430/pins/Msp430GpioC.nc"
+# 48 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/Msp430GpioC.nc"
 static inline void /*PlatformLedsC.Led0Impl*/Msp430GpioC__0__GeneralIO__set(void );
 static inline void /*PlatformLedsC.Led0Impl*/Msp430GpioC__0__GeneralIO__clr(void );
 
@@ -1946,11 +1955,11 @@ static inline void /*PlatformLedsC.Led0Impl*/Msp430GpioC__0__GeneralIO__clr(void
 
 
 static inline void /*PlatformLedsC.Led0Impl*/Msp430GpioC__0__GeneralIO__makeOutput(void );
-# 85 "../../tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
+# 85 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
 static void /*PlatformLedsC.Led1Impl*/Msp430GpioC__1__HplGeneralIO__makeOutput(void );
 #line 48
 static void /*PlatformLedsC.Led1Impl*/Msp430GpioC__1__HplGeneralIO__set(void );
-# 48 "../../tos/chips/msp430/pins/Msp430GpioC.nc"
+# 48 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/Msp430GpioC.nc"
 static inline void /*PlatformLedsC.Led1Impl*/Msp430GpioC__1__GeneralIO__set(void );
 
 
@@ -1958,11 +1967,11 @@ static inline void /*PlatformLedsC.Led1Impl*/Msp430GpioC__1__GeneralIO__set(void
 
 
 static inline void /*PlatformLedsC.Led1Impl*/Msp430GpioC__1__GeneralIO__makeOutput(void );
-# 85 "../../tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
+# 85 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
 static void /*PlatformLedsC.Led2Impl*/Msp430GpioC__2__HplGeneralIO__makeOutput(void );
 #line 48
 static void /*PlatformLedsC.Led2Impl*/Msp430GpioC__2__HplGeneralIO__set(void );
-# 48 "../../tos/chips/msp430/pins/Msp430GpioC.nc"
+# 48 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/Msp430GpioC.nc"
 static inline void /*PlatformLedsC.Led2Impl*/Msp430GpioC__2__GeneralIO__set(void );
 
 
@@ -2015,7 +2024,7 @@ static inline error_t RealMainP__SoftwareInit__default__init(void );
 # 75 "/opt/tinyos-main-read-only/tos/interfaces/TaskBasic.nc"
 static void SchedulerBasicP__TaskBasic__runTask(
 # 56 "/opt/tinyos-main-read-only/tos/system/SchedulerBasicP.nc"
-uint8_t arg_0x2afd277c7650);
+uint8_t arg_0x2acebb235650);
 # 76 "/opt/tinyos-main-read-only/tos/interfaces/McuSleep.nc"
 static void SchedulerBasicP__McuSleep__sleep(void );
 # 61 "/opt/tinyos-main-read-only/tos/system/SchedulerBasicP.nc"
@@ -2109,9 +2118,9 @@ static inline void /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Event__default_
 }
 
 # 28 "../../tos/chips/msp430/timer/Msp430TimerEvent.nc"
-inline static void /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Event__fired(uint8_t arg_0x2afd278ac458){
+inline static void /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Event__fired(uint8_t arg_0x2acebb31a458){
 #line 28
-  switch (arg_0x2afd278ac458) {
+  switch (arg_0x2acebb31a458) {
 #line 28
     case 0:
 #line 28
@@ -2139,7 +2148,7 @@ inline static void /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Event__fired(ui
 #line 28
     default:
 #line 28
-      /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Event__default__fired(arg_0x2afd278ac458);
+      /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Event__default__fired(arg_0x2acebb31a458);
 #line 28
       break;
 #line 28
@@ -2365,9 +2374,9 @@ static inline void /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__Event__default_
 }
 
 # 28 "../../tos/chips/msp430/timer/Msp430TimerEvent.nc"
-inline static void /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__Event__fired(uint8_t arg_0x2afd278ac458){
+inline static void /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__Event__fired(uint8_t arg_0x2acebb31a458){
 #line 28
-  switch (arg_0x2afd278ac458) {
+  switch (arg_0x2acebb31a458) {
 #line 28
     case 0:
 #line 28
@@ -2383,7 +2392,7 @@ inline static void /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__Event__fired(ui
 #line 28
     default:
 #line 28
-      /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__Event__default__fired(arg_0x2afd278ac458);
+      /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__Event__default__fired(arg_0x2acebb31a458);
 #line 28
       break;
 #line 28
@@ -2492,7 +2501,7 @@ inline static void RealMainP__Scheduler__init(void ){
 #line 57
 }
 #line 57
-# 56 "../../tos/chips/msp430/pins/HplMsp430GeneralIOP.nc"
+# 56 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/HplMsp430GeneralIOP.nc"
 static inline void /*HplMsp430GeneralIOC.P56*/HplMsp430GeneralIOP__38__IO__set(void )
 #line 56
 {
@@ -2501,14 +2510,14 @@ static inline void /*HplMsp430GeneralIOC.P56*/HplMsp430GeneralIOP__38__IO__set(v
   * (volatile uint8_t * )49U |= 0x01 << 6;
 }
 
-# 48 "../../tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
+# 48 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
 inline static void /*PlatformLedsC.Led2Impl*/Msp430GpioC__2__HplGeneralIO__set(void ){
 #line 48
   /*HplMsp430GeneralIOC.P56*/HplMsp430GeneralIOP__38__IO__set();
 #line 48
 }
 #line 48
-# 48 "../../tos/chips/msp430/pins/Msp430GpioC.nc"
+# 48 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/Msp430GpioC.nc"
 static inline void /*PlatformLedsC.Led2Impl*/Msp430GpioC__2__GeneralIO__set(void )
 #line 48
 {
@@ -2523,7 +2532,7 @@ inline static void LedsP__Led2__set(void ){
 #line 40
 }
 #line 40
-# 56 "../../tos/chips/msp430/pins/HplMsp430GeneralIOP.nc"
+# 56 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/HplMsp430GeneralIOP.nc"
 static inline void /*HplMsp430GeneralIOC.P55*/HplMsp430GeneralIOP__37__IO__set(void )
 #line 56
 {
@@ -2532,14 +2541,14 @@ static inline void /*HplMsp430GeneralIOC.P55*/HplMsp430GeneralIOP__37__IO__set(v
   * (volatile uint8_t * )49U |= 0x01 << 5;
 }
 
-# 48 "../../tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
+# 48 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
 inline static void /*PlatformLedsC.Led1Impl*/Msp430GpioC__1__HplGeneralIO__set(void ){
 #line 48
   /*HplMsp430GeneralIOC.P55*/HplMsp430GeneralIOP__37__IO__set();
 #line 48
 }
 #line 48
-# 48 "../../tos/chips/msp430/pins/Msp430GpioC.nc"
+# 48 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/Msp430GpioC.nc"
 static inline void /*PlatformLedsC.Led1Impl*/Msp430GpioC__1__GeneralIO__set(void )
 #line 48
 {
@@ -2554,7 +2563,7 @@ inline static void LedsP__Led1__set(void ){
 #line 40
 }
 #line 40
-# 56 "../../tos/chips/msp430/pins/HplMsp430GeneralIOP.nc"
+# 56 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/HplMsp430GeneralIOP.nc"
 static inline void /*HplMsp430GeneralIOC.P54*/HplMsp430GeneralIOP__36__IO__set(void )
 #line 56
 {
@@ -2563,14 +2572,14 @@ static inline void /*HplMsp430GeneralIOC.P54*/HplMsp430GeneralIOP__36__IO__set(v
   * (volatile uint8_t * )49U |= 0x01 << 4;
 }
 
-# 48 "../../tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
+# 48 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
 inline static void /*PlatformLedsC.Led0Impl*/Msp430GpioC__0__HplGeneralIO__set(void ){
 #line 48
   /*HplMsp430GeneralIOC.P54*/HplMsp430GeneralIOP__36__IO__set();
 #line 48
 }
 #line 48
-# 48 "../../tos/chips/msp430/pins/Msp430GpioC.nc"
+# 48 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/Msp430GpioC.nc"
 static inline void /*PlatformLedsC.Led0Impl*/Msp430GpioC__0__GeneralIO__set(void )
 #line 48
 {
@@ -2585,7 +2594,7 @@ inline static void LedsP__Led0__set(void ){
 #line 40
 }
 #line 40
-# 63 "../../tos/chips/msp430/pins/HplMsp430GeneralIOP.nc"
+# 63 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/HplMsp430GeneralIOP.nc"
 static inline void /*HplMsp430GeneralIOC.P56*/HplMsp430GeneralIOP__38__IO__makeOutput(void )
 #line 63
 {
@@ -2594,14 +2603,14 @@ static inline void /*HplMsp430GeneralIOC.P56*/HplMsp430GeneralIOP__38__IO__makeO
   * (volatile uint8_t * )50U |= 0x01 << 6;
 }
 
-# 85 "../../tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
+# 85 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
 inline static void /*PlatformLedsC.Led2Impl*/Msp430GpioC__2__HplGeneralIO__makeOutput(void ){
 #line 85
   /*HplMsp430GeneralIOC.P56*/HplMsp430GeneralIOP__38__IO__makeOutput();
 #line 85
 }
 #line 85
-# 54 "../../tos/chips/msp430/pins/Msp430GpioC.nc"
+# 54 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/Msp430GpioC.nc"
 static inline void /*PlatformLedsC.Led2Impl*/Msp430GpioC__2__GeneralIO__makeOutput(void )
 #line 54
 {
@@ -2616,7 +2625,7 @@ inline static void LedsP__Led2__makeOutput(void ){
 #line 46
 }
 #line 46
-# 63 "../../tos/chips/msp430/pins/HplMsp430GeneralIOP.nc"
+# 63 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/HplMsp430GeneralIOP.nc"
 static inline void /*HplMsp430GeneralIOC.P55*/HplMsp430GeneralIOP__37__IO__makeOutput(void )
 #line 63
 {
@@ -2625,14 +2634,14 @@ static inline void /*HplMsp430GeneralIOC.P55*/HplMsp430GeneralIOP__37__IO__makeO
   * (volatile uint8_t * )50U |= 0x01 << 5;
 }
 
-# 85 "../../tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
+# 85 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
 inline static void /*PlatformLedsC.Led1Impl*/Msp430GpioC__1__HplGeneralIO__makeOutput(void ){
 #line 85
   /*HplMsp430GeneralIOC.P55*/HplMsp430GeneralIOP__37__IO__makeOutput();
 #line 85
 }
 #line 85
-# 54 "../../tos/chips/msp430/pins/Msp430GpioC.nc"
+# 54 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/Msp430GpioC.nc"
 static inline void /*PlatformLedsC.Led1Impl*/Msp430GpioC__1__GeneralIO__makeOutput(void )
 #line 54
 {
@@ -2647,7 +2656,7 @@ inline static void LedsP__Led1__makeOutput(void ){
 #line 46
 }
 #line 46
-# 63 "../../tos/chips/msp430/pins/HplMsp430GeneralIOP.nc"
+# 63 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/HplMsp430GeneralIOP.nc"
 static inline void /*HplMsp430GeneralIOC.P54*/HplMsp430GeneralIOP__36__IO__makeOutput(void )
 #line 63
 {
@@ -2656,14 +2665,14 @@ static inline void /*HplMsp430GeneralIOC.P54*/HplMsp430GeneralIOP__36__IO__makeO
   * (volatile uint8_t * )50U |= 0x01 << 4;
 }
 
-# 85 "../../tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
+# 85 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
 inline static void /*PlatformLedsC.Led0Impl*/Msp430GpioC__0__HplGeneralIO__makeOutput(void ){
 #line 85
   /*HplMsp430GeneralIOC.P54*/HplMsp430GeneralIOP__36__IO__makeOutput();
 #line 85
 }
 #line 85
-# 54 "../../tos/chips/msp430/pins/Msp430GpioC.nc"
+# 54 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/Msp430GpioC.nc"
 static inline void /*PlatformLedsC.Led0Impl*/Msp430GpioC__0__GeneralIO__makeOutput(void )
 #line 54
 {
@@ -3285,7 +3294,7 @@ static __inline uint16_t get_register(uint8_t reg)
   return val;
 }
 
-# 57 "../../tos/chips/msp430/pins/HplMsp430GeneralIOP.nc"
+# 57 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/HplMsp430GeneralIOP.nc"
 static inline void /*HplMsp430GeneralIOC.P54*/HplMsp430GeneralIOP__36__IO__clr(void )
 #line 57
 {
@@ -3297,14 +3306,14 @@ static inline void /*HplMsp430GeneralIOC.P54*/HplMsp430GeneralIOP__36__IO__clr(v
     __nesc_atomic_end(__nesc_atomic); }
 }
 
-# 53 "../../tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
+# 53 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/HplMsp430GeneralIO.nc"
 inline static void /*PlatformLedsC.Led0Impl*/Msp430GpioC__0__HplGeneralIO__clr(void ){
 #line 53
   /*HplMsp430GeneralIOC.P54*/HplMsp430GeneralIOP__36__IO__clr();
 #line 53
 }
 #line 53
-# 49 "../../tos/chips/msp430/pins/Msp430GpioC.nc"
+# 49 "/opt/tinyos-main-read-only/tos/chips/msp430/pins/Msp430GpioC.nc"
 static inline void /*PlatformLedsC.Led0Impl*/Msp430GpioC__0__GeneralIO__clr(void )
 #line 49
 {
@@ -3336,9 +3345,9 @@ inline static void TestSpiC__Leds__led0On(void ){
 #line 56
 }
 #line 56
-# 219 "../../tos/chips/cc2420/x-control/cc2420_x_control.h"
+# 218 "../../tos/chips/cc2420/x-control/cc2420_x_control.h"
 static __inline void cc2420_rx_start()
-#line 219
+#line 218
 {
   strobe(CC2420_SRXON);
 }
@@ -3495,9 +3504,9 @@ static inline void cc2420_spi_init()
   U0CTL &= ~0x01;
 }
 
-# 181 "../../tos/chips/cc2420/x-control/cc2420_x_control.h"
+# 180 "../../tos/chips/cc2420/x-control/cc2420_x_control.h"
 static inline void cc2420_init()
-#line 181
+#line 180
 {
 
   cc2420_spi_init();
@@ -3511,13 +3520,13 @@ static inline void cc2420_init()
 
   P1IE &= ~(1 << 0);
   do {
-#line 193
+#line 192
       P1IES &= ~(1 << 0);
-#line 193
+#line 192
       P1IFG &= ~(1 << 0);
     }
   while (
-#line 193
+#line 192
   0);
 
   P4OUT |= 1 << 5;
@@ -3637,9 +3646,9 @@ static inline void SchedulerBasicP__TaskBasic__default__runTask(uint8_t id)
 }
 
 # 75 "/opt/tinyos-main-read-only/tos/interfaces/TaskBasic.nc"
-inline static void SchedulerBasicP__TaskBasic__runTask(uint8_t arg_0x2afd277c7650){
+inline static void SchedulerBasicP__TaskBasic__runTask(uint8_t arg_0x2acebb235650){
 #line 75
-    SchedulerBasicP__TaskBasic__default__runTask(arg_0x2afd277c7650);
+    SchedulerBasicP__TaskBasic__default__runTask(arg_0x2acebb235650);
 #line 75
 }
 #line 75

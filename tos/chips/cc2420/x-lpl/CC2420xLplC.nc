@@ -17,14 +17,14 @@ configuration CC2420xLplC {
   RadioTimerUpdate = CC2420xLplP;
   OppoRouting = CC2420xRTxP;
 
-  MainC->SoftwareInit -> CC2420xLplP;
-  MainC->SoftwareInit -> CC2420xRTxP;
+  MainC.SoftwareInit -> CC2420xLplP;
+  MainC.SoftwareInit -> CC2420xRTxP;
   
   CC2420xLplP.SubSend -> CC2420xRTxP;
   CC2420xLplP.SubReceive -> CC2420xRTxP;
   CC2420xLplP.LplTime -> CC2420xRTxP;
 
-  components new TimerMilliC as SleepTimer;
+  components new TimerMilliC() as SleepTimer;
   CC2420xLplP.SleepTimer -> SleepTimer;
 
   components RandomC;
