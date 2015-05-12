@@ -31,6 +31,7 @@
  
 #include "Timer.h"
 #include "RadioCountToLeds.h"
+#include "serial_fast_print.h"
  
 /**
  * Implementation of the RadioCountToLeds application. RadioCountToLeds 
@@ -53,6 +54,7 @@ module RadioCountToLedsC @safe() {
     interface LocalTime<TMilli>;
     interface StdControl as AMControl;
     interface Packet;
+    interface LplxPacket;
   }
 }
 implementation {
@@ -64,6 +66,9 @@ implementation {
  
   event void Boot.booted() {
     locked = FALSE;
+    // locked = TRUE;
+    memset((uint8_t*)(&packet), 0x0, sizeof(message_t));
+    uart_init();
     call AMControl.start();
     call MilliTimer.startPeriodic(1024);
   }
@@ -75,8 +80,9 @@ implementation {
     else {
       radio_count_msg_t* rcm = (radio_count_msg_t*)call Packet.getPayload(&packet, sizeof(radio_count_msg_t));
       if (rcm == NULL)
-	return;
+        return;
 
+      call LplxPacket.setPacketBulk(&packet, 1);
       rcm->counter = counter;
       rcm->time = call LocalTime.get();
       if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(radio_count_msg_t)) == SUCCESS)

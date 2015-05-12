@@ -29,4 +29,8 @@ configuration CC2420xLplC {
 
   components RandomC;
   CC2420xLplP.Random -> RandomC;
+
+  components LedsC;
+  CC2420xLplP.Leds -> LedsC;
+  CC2420xRTxP.Leds -> LedsC;
 }

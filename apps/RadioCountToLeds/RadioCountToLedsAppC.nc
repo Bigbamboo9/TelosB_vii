@@ -57,6 +57,7 @@ implementation {
   App.Leds -> LedsC;
   App.MilliTimer -> TimerMilliC;
   App.Packet -> AMSenderC;
+  App.LplxPacket -> ActiveMessageC;
 
   components HilTimerMilliC;
   App.LocalTime -> HilTimerMilliC;

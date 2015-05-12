@@ -56,4 +56,20 @@ static inline void printf_u16(uint8_t var, uint16_t* word) {
     uart_fast_tx(low);
   }
 }
+
+static inline void printf_int(uint8_t var, int* value) {
+  uint8_t high;
+  uint8_t low;
+  uint8_t idx;
+  uint16_t tmp_value;
+  uart_fast_tx(0x44);
+  uart_fast_tx(var);
+  for (idx = 0; idx < var; idx++) {
+    tmp_value = (uint16_t)value[idx];
+    low = tmp_value & 0x00FF;
+    high = tmp_value >> 8;
+    uart_fast_tx(high);
+    uart_fast_tx(low);
+  }
+}
 #endif

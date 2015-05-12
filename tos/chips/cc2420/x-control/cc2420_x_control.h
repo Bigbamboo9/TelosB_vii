@@ -80,7 +80,7 @@ static inline void disable_other_interrupts(interrupt_status_t* status) {
   // disable TimerB_VECTORx except TBCCTL1
   TBCCTL0 &= ~CCIE;
   // TimerB overflow is always disabled
-  TBCTL   &= ~CCIE;
+  TBCTL   &= ~TBIE;
   // set SFD pin
   P4SEL |= (1 << SFD);
   // enable rising edge interrupt

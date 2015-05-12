@@ -92,7 +92,7 @@ static inline void set_payload_length(message_t* m, uint8_t len) {
 }
 
 static inline void set_tx_setting(message_t* m, rtx_setting_t* ts) {
-  memcpy(ts, get_packet_setting(m), sizeof(rtx_setting_t));
+  memcpy((uint8_t*)ts, get_packet_setting(m), sizeof(rtx_setting_t));
 }
 
 #endif

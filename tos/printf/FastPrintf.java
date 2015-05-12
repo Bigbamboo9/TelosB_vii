@@ -10,8 +10,10 @@ public class FastPrintf {
 		ByteSource io;
 		Boolean u8_print = false;
 		Boolean u16_print = false;
+		Boolean int_print = false;
 		int u8_len = 0;
 		int u16_len = 0;
+		int int_len = 0;
 		if (args.length == 2 && args[0].equals("-comm")) {
 			source = args[1];
 		} else if (args.length > 0) {
@@ -29,14 +31,19 @@ public class FastPrintf {
 				int low;
 				int high;
 				int word;
+				short value;
 				if (b == 0x22 && !u8_print) {
 					u8_print = true;
 				}else if (b == 0x77 && !u16_print) {
 					u16_print = true;
-				}else if (u8_print && u8_len == 0) {
+				}else if (b == 0x44 && !int_print) {
+					int_print = true;
+                                }else if (u8_print && u8_len == 0) {
 					u8_len = b;
 				}else if (u16_print && u16_len == 0) {
 					u16_len = b;
+                                }else if (int_print && int_len == 0) {
+					int_len = b;
 				}else if (u8_print && u8_len != 0) {
 					System.out.print(b + " ");
 					u8_len--;
@@ -56,7 +63,18 @@ public class FastPrintf {
 						System.out.flush();
 						u16_print = false;
 					}
-				}
+				}else if (int_print && int_len != 0) {
+					high = b & 0x000000ff;
+					low  = io.readByte() & 0x000000ff;
+					value = (short)(high * 256 + low);
+					System.out.print(value + " ");
+					int_len--;
+					if (int_len == 0) {
+						System.out.println();
+						System.out.flush();
+						int_print = false;
+					}
+                                }
 			}
 		} catch (IOException e) { System.out.println("error " + e); }
 

@@ -10,6 +10,7 @@ configuration ActiveMessageC {
 
     interface Packet;
     interface AMPacket;
+    interface LplxPacket;
     interface PacketAcknowledgements;
   }
 }
@@ -23,5 +24,6 @@ implementation {
   Snoop        = AM.Snoop;
   Packet       = AM;
   AMPacket     = AM;
+  LplxPacket   = AM;
   PacketAcknowledgements = AM;
 }
