@@ -66,22 +66,22 @@ typedef enum {
   S_CI_ACK
 } cc2420_rtx_state_t;
 
-typedef struct {
+typedef nx_struct {
   // receive: whether batched transmission
-  bool batched;
+  nx_bool batched;
   // receive: whether acknoledgement the received packet
-  bool ack;
+  nx_bool ack;
   // transmit: priority set
-  bool priority;
+  nx_bool priority;
   // transmit: number of packets need to transmit
-  uint8_t size;
-  uint16_t addr;
-  uint16_t metric;
-  uint16_t progress;
-  bool ci;
+  nx_uint8_t size;
+  nx_uint16_t addr;
+  nx_uint16_t metric;
+  nx_uint16_t progress;
+  nx_bool ci;
   // ci : hop constraint
-  uint8_t hop;
-  uint8_t preamble_dsn;
+  nx_uint8_t hop;
+  nx_uint8_t preamble_dsn;
 } rtx_setting_t;
 
 typedef struct {

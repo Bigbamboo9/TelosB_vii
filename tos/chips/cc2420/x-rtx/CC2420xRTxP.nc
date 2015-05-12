@@ -861,9 +861,9 @@ module CC2420xRTxP {
   }
 
   static inline void cc2420_strobe_tx() {
-    strobe( CC2420_STXON );
     radio_flush_rx();
     TBCCTL1 &= ~CCIFG;
+    strobe( CC2420_STXON );
   }
 
   static inline void cc2420_ack_wait_tx() {

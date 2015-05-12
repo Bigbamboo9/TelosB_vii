@@ -133,7 +133,12 @@ typedef long long int intmax_t;
 __extension__ 
 #line 94
 typedef unsigned long long int uintmax_t;
-# 286 "/usr/lib/ncc/nesc_nx.h"
+# 281 "/usr/lib/ncc/nesc_nx.h"
+static __inline uint8_t __nesc_ntoh_uint8(const void * source)  ;
+
+
+
+
 static __inline uint8_t __nesc_hton_uint8(void * target, uint8_t value)  ;
 
 
@@ -151,6 +156,8 @@ static __inline uint8_t __nesc_hton_leuint8(void * target, uint8_t value)  ;
 
 
 
+static __inline int8_t __nesc_ntoh_int8(const void * source)  ;
+#line 303
 static __inline int8_t __nesc_hton_int8(void * target, int8_t value)  ;
 
 
@@ -232,11 +239,11 @@ typedef int32_t ufs_daddr_t;
 typedef int32_t ufs_time_t;
 typedef u_int32_t uid_t;
 # 42 "/usr/bin/../lib/gcc/msp430/4.6.3/../../../../msp430/include/string.h" 3
-extern void *memcpy(void *arg_0x2b7ac4b85bf0, const void *arg_0x2b7ac4b83020, size_t arg_0x2b7ac4b832c8);
+extern void *memcpy(void *arg_0x2b3c26dc1bf0, const void *arg_0x2b3c26dbf020, size_t arg_0x2b3c26dbf2c8);
 
-extern void *memset(void *arg_0x2b7ac4b82980, int arg_0x2b7ac4b82be8, size_t arg_0x2b7ac4b89020);
+extern void *memset(void *arg_0x2b3c26dbe980, int arg_0x2b3c26dbebe8, size_t arg_0x2b3c26dc5020);
 #line 65
-extern void *memset(void *arg_0x2b7ac4b9bb10, int arg_0x2b7ac4b9bd78, size_t arg_0x2b7ac4b9a060);
+extern void *memset(void *arg_0x2b3c26dd7b10, int arg_0x2b3c26dd7d78, size_t arg_0x2b3c26dd6060);
 # 62 "/usr/bin/../lib/gcc/msp430/4.6.3/../../../../msp430/include/stdlib.h" 3
 #line 59
 typedef struct __nesc_unnamed4242 {
@@ -391,7 +398,7 @@ struct _reent {
 
   int __sdidinit;
 
-  void (*__cleanup)(struct _reent *arg_0x2b7ac4bde290);
+  void (*__cleanup)(struct _reent *arg_0x2b3c26e1a290);
 
 
   struct _Bigint *_result;
@@ -431,7 +438,7 @@ struct _reent {
   struct _atexit _atexit0;
 
 
-  void (**_sig_func)(int arg_0x2b7ac4be3300);
+  void (**_sig_func)(int arg_0x2b3c26e1f300);
 
 
 
@@ -1406,23 +1413,23 @@ typedef enum __nesc_unnamed4266 {
 } cc2420_rtx_state_t;
 #line 85
 #line 69
-typedef struct __nesc_unnamed4267 {
+typedef nx_struct __nesc_unnamed4267 {
 
-  bool batched;
+  nx_bool batched;
 
-  bool ack;
+  nx_bool ack;
 
-  bool priority;
+  nx_bool priority;
 
-  uint8_t size;
-  uint16_t addr;
-  uint16_t metric;
-  uint16_t progress;
-  bool ci;
+  nx_uint8_t size;
+  nx_uint16_t addr;
+  nx_uint16_t metric;
+  nx_uint16_t progress;
+  nx_bool ci;
 
-  uint8_t hop;
-  uint8_t preamble_dsn;
-} rtx_setting_t;
+  nx_uint8_t hop;
+  nx_uint8_t preamble_dsn;
+} __attribute__((packed)) rtx_setting_t;
 
 
 
@@ -1844,7 +1851,7 @@ static void /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__VectorTimerX1__fired(v
 #line 28
 static void /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Event__default__fired(
 # 40 "../../tos/chips/msp430/timer/Msp430TimerP.nc"
-uint8_t arg_0x2b7ac5191458);
+uint8_t arg_0x2b3c273cd458);
 # 34 "../../tos/chips/msp430/timer/Msp430Timer.nc"
 static uint16_t /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Timer__get(void );
 static bool /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Timer__isOverflowPending(void );
@@ -1857,7 +1864,7 @@ static void /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__VectorTimerX1__fired(v
 #line 28
 static void /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__Event__default__fired(
 # 40 "../../tos/chips/msp430/timer/Msp430TimerP.nc"
-uint8_t arg_0x2b7ac5191458);
+uint8_t arg_0x2b3c273cd458);
 # 33 "../../tos/chips/msp430/timer/Msp430Capture.nc"
 static uint16_t /*Msp430TimerC.Msp430TimerA0*/Msp430TimerCapComP__0__Capture__getEvent(void );
 #line 75
@@ -2018,11 +2025,11 @@ static void McuSleepC__McuSleep__sleep(void );
 # 67 "/opt/tinyos-main-read-only/tos/interfaces/TaskBasic.nc"
 static error_t SchedulerBasicP__TaskBasic__postTask(
 # 56 "/opt/tinyos-main-read-only/tos/system/SchedulerBasicP.nc"
-uint8_t arg_0x2b7ac50aed50);
+uint8_t arg_0x2b3c272ead50);
 # 75 "/opt/tinyos-main-read-only/tos/interfaces/TaskBasic.nc"
 static void SchedulerBasicP__TaskBasic__default__runTask(
 # 56 "/opt/tinyos-main-read-only/tos/system/SchedulerBasicP.nc"
-uint8_t arg_0x2b7ac50aed50);
+uint8_t arg_0x2b3c272ead50);
 # 57 "/opt/tinyos-main-read-only/tos/interfaces/Scheduler.nc"
 static void SchedulerBasicP__Scheduler__init(void );
 #line 72
@@ -2085,7 +2092,7 @@ error_t error);
 # 110 "/opt/tinyos-main-read-only/tos/interfaces/AMSend.nc"
 static void /*AMQueueP.AMQueueImplP*/AMQueueImplP__0__AMSend__sendDone(
 # 48 "/opt/tinyos-main-read-only/tos/system/AMQueueImplP.nc"
-am_id_t arg_0x2b7ac57bac70, 
+am_id_t arg_0x2b3c279f6c70, 
 # 103 "/opt/tinyos-main-read-only/tos/interfaces/AMSend.nc"
 message_t * msg, 
 
@@ -2098,7 +2105,7 @@ error_t error);
 # 75 "/opt/tinyos-main-read-only/tos/interfaces/Send.nc"
 static error_t /*AMQueueP.AMQueueImplP*/AMQueueImplP__0__Send__send(
 # 46 "/opt/tinyos-main-read-only/tos/system/AMQueueImplP.nc"
-uint8_t arg_0x2b7ac57bb990, 
+uint8_t arg_0x2b3c279f7990, 
 # 67 "/opt/tinyos-main-read-only/tos/interfaces/Send.nc"
 message_t * msg, 
 
@@ -2112,7 +2119,7 @@ uint8_t len);
 #line 100
 static void /*AMQueueP.AMQueueImplP*/AMQueueImplP__0__Send__default__sendDone(
 # 46 "/opt/tinyos-main-read-only/tos/system/AMQueueImplP.nc"
-uint8_t arg_0x2b7ac57bb990, 
+uint8_t arg_0x2b3c279f7990, 
 # 96 "/opt/tinyos-main-read-only/tos/interfaces/Send.nc"
 message_t * msg, 
 
@@ -2134,7 +2141,7 @@ error_t error);
 # 80 "/opt/tinyos-main-read-only/tos/interfaces/AMSend.nc"
 static error_t CC2420ActiveMessageP__AMSend__send(
 # 6 "../../tos/chips/cc2420/CC2420ActiveMessageP.nc"
-am_id_t arg_0x2b7ac5836158, 
+am_id_t arg_0x2b3c27a72158, 
 # 80 "/opt/tinyos-main-read-only/tos/interfaces/AMSend.nc"
 am_addr_t addr, 
 #line 71
@@ -2157,7 +2164,7 @@ message_t *
 
 CC2420ActiveMessageP__Snoop__default__receive(
 # 8 "../../tos/chips/cc2420/CC2420ActiveMessageP.nc"
-am_id_t arg_0x2b7ac5835db8, 
+am_id_t arg_0x2b3c27a71db8, 
 # 71 "/opt/tinyos-main-read-only/tos/interfaces/Receive.nc"
 message_t * msg, 
 void * payload, 
@@ -2193,7 +2200,7 @@ message_t *
 
 CC2420ActiveMessageP__Receive__default__receive(
 # 7 "../../tos/chips/cc2420/CC2420ActiveMessageP.nc"
-am_id_t arg_0x2b7ac5835270, 
+am_id_t arg_0x2b3c27a71270, 
 # 71 "/opt/tinyos-main-read-only/tos/interfaces/Receive.nc"
 message_t * msg, 
 void * payload, 
@@ -2302,11 +2309,11 @@ static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC__0__TimerFrom__f
 #line 83
 static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC__0__Timer__default__fired(
 # 48 "../../tos/lib/timer/VirtualizeTimerC.nc"
-uint8_t arg_0x2b7ac5a25020);
+uint8_t arg_0x2b3c27c61020);
 # 64 "/opt/tinyos-main-read-only/tos/lib/timer/Timer.nc"
 static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC__0__Timer__startPeriodic(
 # 48 "../../tos/lib/timer/VirtualizeTimerC.nc"
-uint8_t arg_0x2b7ac5a25020, 
+uint8_t arg_0x2b3c27c61020, 
 # 64 "/opt/tinyos-main-read-only/tos/lib/timer/Timer.nc"
 uint32_t dt);
 
@@ -2319,7 +2326,7 @@ uint32_t dt);
 
 static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC__0__Timer__startOneShot(
 # 48 "../../tos/lib/timer/VirtualizeTimerC.nc"
-uint8_t arg_0x2b7ac5a25020, 
+uint8_t arg_0x2b3c27c61020, 
 # 73 "/opt/tinyos-main-read-only/tos/lib/timer/Timer.nc"
 uint32_t dt);
 
@@ -2328,7 +2335,7 @@ uint32_t dt);
 
 static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC__0__Timer__stop(
 # 48 "../../tos/lib/timer/VirtualizeTimerC.nc"
-uint8_t arg_0x2b7ac5a25020);
+uint8_t arg_0x2b3c27c61020);
 # 61 "/opt/tinyos-main-read-only/tos/lib/timer/LocalTime.nc"
 static uint32_t /*HilTimerMilliC.CounterToLocalTimeC*/CounterToLocalTimeC__0__LocalTime__get(void );
 # 82 "/opt/tinyos-main-read-only/tos/lib/timer/Counter.nc"
@@ -2490,7 +2497,7 @@ static inline error_t Msp430ClockP__Init__init(void );
 # 28 "../../tos/chips/msp430/timer/Msp430TimerEvent.nc"
 static void /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Event__fired(
 # 40 "../../tos/chips/msp430/timer/Msp430TimerP.nc"
-uint8_t arg_0x2b7ac5191458);
+uint8_t arg_0x2b3c273cd458);
 # 37 "../../tos/chips/msp430/timer/Msp430Timer.nc"
 static void /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Timer__overflow(void );
 # 51 "../../tos/chips/msp430/timer/Msp430TimerP.nc"
@@ -2522,7 +2529,7 @@ static inline void /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Event__default_
 # 28 "../../tos/chips/msp430/timer/Msp430TimerEvent.nc"
 static void /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__Event__fired(
 # 40 "../../tos/chips/msp430/timer/Msp430TimerP.nc"
-uint8_t arg_0x2b7ac5191458);
+uint8_t arg_0x2b3c273cd458);
 # 37 "../../tos/chips/msp430/timer/Msp430Timer.nc"
 static void /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__Timer__overflow(void );
 # 115 "../../tos/chips/msp430/timer/Msp430TimerP.nc"
@@ -3037,7 +3044,7 @@ int main(void )   ;
 # 75 "/opt/tinyos-main-read-only/tos/interfaces/TaskBasic.nc"
 static void SchedulerBasicP__TaskBasic__runTask(
 # 56 "/opt/tinyos-main-read-only/tos/system/SchedulerBasicP.nc"
-uint8_t arg_0x2b7ac50aed50);
+uint8_t arg_0x2b3c272ead50);
 # 76 "/opt/tinyos-main-read-only/tos/interfaces/McuSleep.nc"
 static void SchedulerBasicP__McuSleep__sleep(void );
 # 61 "/opt/tinyos-main-read-only/tos/system/SchedulerBasicP.nc"
@@ -3222,7 +3229,7 @@ static inline void /*RadioCountToLedsAppC.AMSenderC.SenderC.AMQueueEntryP*/AMQue
 # 80 "/opt/tinyos-main-read-only/tos/interfaces/AMSend.nc"
 static error_t /*AMQueueP.AMQueueImplP*/AMQueueImplP__0__AMSend__send(
 # 48 "/opt/tinyos-main-read-only/tos/system/AMQueueImplP.nc"
-am_id_t arg_0x2b7ac57bac70, 
+am_id_t arg_0x2b3c279f6c70, 
 # 80 "/opt/tinyos-main-read-only/tos/interfaces/AMSend.nc"
 am_addr_t addr, 
 #line 71
@@ -3239,7 +3246,7 @@ uint8_t len);
 # 100 "/opt/tinyos-main-read-only/tos/interfaces/Send.nc"
 static void /*AMQueueP.AMQueueImplP*/AMQueueImplP__0__Send__sendDone(
 # 46 "/opt/tinyos-main-read-only/tos/system/AMQueueImplP.nc"
-uint8_t arg_0x2b7ac57bb990, 
+uint8_t arg_0x2b3c279f7990, 
 # 96 "/opt/tinyos-main-read-only/tos/interfaces/Send.nc"
 message_t * msg, 
 
@@ -3332,7 +3339,7 @@ uint8_t len);
 # 110 "/opt/tinyos-main-read-only/tos/interfaces/AMSend.nc"
 static void CC2420ActiveMessageP__AMSend__sendDone(
 # 6 "../../tos/chips/cc2420/CC2420ActiveMessageP.nc"
-am_id_t arg_0x2b7ac5836158, 
+am_id_t arg_0x2b3c27a72158, 
 # 103 "/opt/tinyos-main-read-only/tos/interfaces/AMSend.nc"
 message_t * msg, 
 
@@ -3351,7 +3358,7 @@ message_t *
 
 CC2420ActiveMessageP__Snoop__receive(
 # 8 "../../tos/chips/cc2420/CC2420ActiveMessageP.nc"
-am_id_t arg_0x2b7ac5835db8, 
+am_id_t arg_0x2b3c27a71db8, 
 # 71 "/opt/tinyos-main-read-only/tos/interfaces/Receive.nc"
 message_t * msg, 
 void * payload, 
@@ -3374,7 +3381,7 @@ message_t *
 
 CC2420ActiveMessageP__Receive__receive(
 # 7 "../../tos/chips/cc2420/CC2420ActiveMessageP.nc"
-am_id_t arg_0x2b7ac5835270, 
+am_id_t arg_0x2b3c27a71270, 
 # 71 "/opt/tinyos-main-read-only/tos/interfaces/Receive.nc"
 message_t * msg, 
 void * payload, 
@@ -3718,7 +3725,7 @@ static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC__0__TimerFrom__s
 
 static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC__0__Timer__fired(
 # 48 "../../tos/lib/timer/VirtualizeTimerC.nc"
-uint8_t arg_0x2b7ac5a25020);
+uint8_t arg_0x2b3c27c61020);
 #line 72
 enum /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC__0____nesc_unnamed4291 {
 #line 72
@@ -3930,9 +3937,9 @@ static inline void /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Event__default_
 }
 
 # 28 "../../tos/chips/msp430/timer/Msp430TimerEvent.nc"
-inline static void /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Event__fired(uint8_t arg_0x2b7ac5191458){
+inline static void /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Event__fired(uint8_t arg_0x2b3c273cd458){
 #line 28
-  switch (arg_0x2b7ac5191458) {
+  switch (arg_0x2b3c273cd458) {
 #line 28
     case 0:
 #line 28
@@ -3960,7 +3967,7 @@ inline static void /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Event__fired(ui
 #line 28
     default:
 #line 28
-      /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Event__default__fired(arg_0x2b7ac5191458);
+      /*Msp430TimerC.Msp430TimerA*/Msp430TimerP__0__Event__default__fired(arg_0x2b3c273cd458);
 #line 28
       break;
 #line 28
@@ -4499,9 +4506,9 @@ static inline void /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__Event__default_
 }
 
 # 28 "../../tos/chips/msp430/timer/Msp430TimerEvent.nc"
-inline static void /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__Event__fired(uint8_t arg_0x2b7ac5191458){
+inline static void /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__Event__fired(uint8_t arg_0x2b3c273cd458){
 #line 28
-  switch (arg_0x2b7ac5191458) {
+  switch (arg_0x2b3c273cd458) {
 #line 28
     case 0:
 #line 28
@@ -4517,7 +4524,7 @@ inline static void /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__Event__fired(ui
 #line 28
     default:
 #line 28
-      /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__Event__default__fired(arg_0x2b7ac5191458);
+      /*Msp430TimerC.Msp430TimerB*/Msp430TimerP__1__Event__default__fired(arg_0x2b3c273cd458);
 #line 28
       break;
 #line 28
@@ -4627,7 +4634,16 @@ static __inline void printf_u16(uint8_t var, uint16_t *word)
     }
 }
 
-# 286 "/usr/lib/ncc/nesc_nx.h"
+# 281 "/usr/lib/ncc/nesc_nx.h"
+static __inline  uint8_t __nesc_ntoh_uint8(const void * source)
+#line 281
+{
+  const uint8_t *base = source;
+
+#line 283
+  return base[0];
+}
+
 static __inline  uint8_t __nesc_hton_uint8(void * target, uint8_t value)
 #line 286
 {
@@ -4636,6 +4652,14 @@ static __inline  uint8_t __nesc_hton_uint8(void * target, uint8_t value)
 #line 288
   base[0] = value;
   return value;
+}
+
+#line 303
+static __inline  int8_t __nesc_ntoh_int8(const void * source)
+#line 303
+{
+#line 303
+  return __nesc_ntoh_uint8(source);
 }
 
 #line 303
@@ -4825,9 +4849,9 @@ static __inline void radio_flush_rx()
 static __inline void CC2420xRTxP__cc2420_strobe_tx(void )
 #line 863
 {
-  strobe(CC2420_STXON);
   radio_flush_rx();
   TBCCTL1 &= ~0x0001;
+  strobe(CC2420_STXON);
 }
 
 # 118 "../../tos/chips/cc2420/x-spi/cc2420_x_spi.h"
@@ -5039,6 +5063,11 @@ static __inline void fast_read_any(uint8_t *buf, uint8_t len)
 static __inline void CC2420xRTxP__cc2420_ack_rx(void )
 #line 875
 {
+  unsigned char __nesc_temp51;
+  unsigned char *__nesc_temp50;
+  unsigned char __nesc_temp49;
+  unsigned char *__nesc_temp48;
+#line 876
   uint8_t type = 0xff;
   cc2420_header_t *m_rx_header = (cc2420_header_t *)get_packet_header(CC2420xRTxP__m_rx_buf.p_rx_buf);
   cc2420_header_t *m_tx_header = (cc2420_header_t *)get_packet_header(CC2420xRTxP__p_tx_buf);
@@ -5054,8 +5083,8 @@ static __inline void CC2420xRTxP__cc2420_ack_rx(void )
       type == IEEE154_TYPE_ACK
        && __nesc_ntoh_leuint8(m_rx_header->dsn.nxdata) == __nesc_ntoh_leuint8(m_tx_header->dsn.nxdata)) {
           __nesc_hton_int8(((cc2420_metadata_t *)CC2420xRTxP__p_tx_buf->metadata)->ack.nxdata, TRUE);
-          CC2420xRTxP__tx_setting->size--;
-          if (CC2420xRTxP__tx_setting->size != 0) {
+          (__nesc_temp48 = CC2420xRTxP__tx_setting->size.nxdata, __nesc_hton_uint8(__nesc_temp48, (__nesc_temp49 = __nesc_ntoh_uint8(__nesc_temp48)) - 1), __nesc_temp49);
+          if (__nesc_ntoh_uint8(CC2420xRTxP__tx_setting->size.nxdata) != 0) {
               CC2420xRTxP__rtx_status = S_TX_SFD;
               CC2420xRTxP__tx_counter = 0;
               CC2420xRTxP__p_tx_buf = (message_t *)((uint8_t *)CC2420xRTxP__p_tx_buf + sizeof(message_t ));
@@ -5063,7 +5092,7 @@ static __inline void CC2420xRTxP__cc2420_ack_rx(void )
             }
           else {
 #line 894
-            if (CC2420xRTxP__tx_setting->ci && CC2420xRTxP__tx_counter != 64) {
+            if (__nesc_ntoh_int8(CC2420xRTxP__tx_setting->ci.nxdata) && CC2420xRTxP__tx_counter != 64) {
                 CC2420xRTxP__rtx_status = S_TX_SFD;
                 CC2420xRTxP__tx_counter++;
               }
@@ -5083,8 +5112,8 @@ static __inline void CC2420xRTxP__cc2420_ack_rx(void )
         {
           CC2420xRTxP__tx_counter++;
           if (CC2420xRTxP__tx_counter == 64) {
-              CC2420xRTxP__tx_setting->size--;
-              if (CC2420xRTxP__tx_setting->size != 0) {
+              (__nesc_temp50 = CC2420xRTxP__tx_setting->size.nxdata, __nesc_hton_uint8(__nesc_temp50, (__nesc_temp51 = __nesc_ntoh_uint8(__nesc_temp50)) - 1), __nesc_temp51);
+              if (__nesc_ntoh_uint8(CC2420xRTxP__tx_setting->size.nxdata) != 0) {
                   CC2420xRTxP__rtx_status = S_TX_SFD;
                   CC2420xRTxP__tx_counter = 0;
                   CC2420xRTxP__p_tx_buf = (message_t *)((uint8_t *)CC2420xRTxP__p_tx_buf + sizeof(message_t ));
@@ -5162,13 +5191,13 @@ static inline message_t *CC2420ActiveMessageP__Snoop__default__receive(am_id_t i
 }
 
 # 78 "/opt/tinyos-main-read-only/tos/interfaces/Receive.nc"
-inline static message_t * CC2420ActiveMessageP__Snoop__receive(am_id_t arg_0x2b7ac5835db8, message_t * msg, void * payload, uint8_t len){
+inline static message_t * CC2420ActiveMessageP__Snoop__receive(am_id_t arg_0x2b3c27a71db8, message_t * msg, void * payload, uint8_t len){
 #line 78
   nx_struct message_t *__nesc_result;
 #line 78
 
 #line 78
-    __nesc_result = CC2420ActiveMessageP__Snoop__default__receive(arg_0x2b7ac5835db8, msg, payload, len);
+    __nesc_result = CC2420ActiveMessageP__Snoop__default__receive(arg_0x2b3c27a71db8, msg, payload, len);
 #line 78
 
 #line 78
@@ -5523,13 +5552,13 @@ static inline message_t *CC2420ActiveMessageP__Receive__default__receive(am_id_t
 }
 
 # 78 "/opt/tinyos-main-read-only/tos/interfaces/Receive.nc"
-inline static message_t * CC2420ActiveMessageP__Receive__receive(am_id_t arg_0x2b7ac5835270, message_t * msg, void * payload, uint8_t len){
+inline static message_t * CC2420ActiveMessageP__Receive__receive(am_id_t arg_0x2b3c27a71270, message_t * msg, void * payload, uint8_t len){
 #line 78
   nx_struct message_t *__nesc_result;
 #line 78
 
 #line 78
-  switch (arg_0x2b7ac5835270) {
+  switch (arg_0x2b3c27a71270) {
 #line 78
     case 6:
 #line 78
@@ -5539,7 +5568,7 @@ inline static message_t * CC2420ActiveMessageP__Receive__receive(am_id_t arg_0x2
 #line 78
     default:
 #line 78
-      __nesc_result = CC2420ActiveMessageP__Receive__default__receive(arg_0x2b7ac5835270, msg, payload, len);
+      __nesc_result = CC2420ActiveMessageP__Receive__default__receive(arg_0x2b3c27a71270, msg, payload, len);
 #line 78
       break;
 #line 78
@@ -5582,9 +5611,9 @@ static inline bool CC2420xPacketP__AMPacket__isForMe(message_t *amsg)
 
   return (((CC2420xPacketP__AMPacket__destination(amsg) == CC2420xPacketP__AMPacket__address()
    || CC2420xPacketP__AMPacket__destination(amsg) == AM_BROADCAST_ADDR)
-   || p_ts->addr == CC2420xPacketP__AMPacket__address())
-   || p_ts->addr == AM_BROADCAST_ADDR)
-   || p_ts->addr == 0xFFFE;
+   || __nesc_ntoh_uint16(p_ts->addr.nxdata) == CC2420xPacketP__AMPacket__address())
+   || __nesc_ntoh_uint16(p_ts->addr.nxdata) == AM_BROADCAST_ADDR)
+   || __nesc_ntoh_uint16(p_ts->addr.nxdata) == 0xFFFE;
 }
 
 # 136 "/opt/tinyos-main-read-only/tos/interfaces/AMPacket.nc"
@@ -5632,9 +5661,9 @@ inline static message_t * CC2420xLplP__Receive__receive(message_t * msg, void * 
 }
 #line 78
 # 110 "/opt/tinyos-main-read-only/tos/interfaces/AMSend.nc"
-inline static void CC2420ActiveMessageP__AMSend__sendDone(am_id_t arg_0x2b7ac5836158, message_t * msg, error_t error){
+inline static void CC2420ActiveMessageP__AMSend__sendDone(am_id_t arg_0x2b3c27a72158, message_t * msg, error_t error){
 #line 110
-  /*AMQueueP.AMQueueImplP*/AMQueueImplP__0__AMSend__sendDone(arg_0x2b7ac5836158, msg, error);
+  /*AMQueueP.AMQueueImplP*/AMQueueImplP__0__AMSend__sendDone(arg_0x2b3c27a72158, msg, error);
 #line 110
 }
 #line 110
@@ -5682,9 +5711,9 @@ static inline void /*AMQueueP.AMQueueImplP*/AMQueueImplP__0__Send__default__send
 }
 
 # 100 "/opt/tinyos-main-read-only/tos/interfaces/Send.nc"
-inline static void /*AMQueueP.AMQueueImplP*/AMQueueImplP__0__Send__sendDone(uint8_t arg_0x2b7ac57bb990, message_t * msg, error_t error){
+inline static void /*AMQueueP.AMQueueImplP*/AMQueueImplP__0__Send__sendDone(uint8_t arg_0x2b3c279f7990, message_t * msg, error_t error){
 #line 100
-  switch (arg_0x2b7ac57bb990) {
+  switch (arg_0x2b3c279f7990) {
 #line 100
     case 0U:
 #line 100
@@ -5694,7 +5723,7 @@ inline static void /*AMQueueP.AMQueueImplP*/AMQueueImplP__0__Send__sendDone(uint
 #line 100
     default:
 #line 100
-      /*AMQueueP.AMQueueImplP*/AMQueueImplP__0__Send__default__sendDone(arg_0x2b7ac57bb990, msg, error);
+      /*AMQueueP.AMQueueImplP*/AMQueueImplP__0__Send__default__sendDone(arg_0x2b3c279f7990, msg, error);
 #line 100
       break;
 #line 100
@@ -5771,8 +5800,8 @@ static __inline uint8_t get_packet_bulk(message_t *m)
   rtx_setting_t *p_ts = (rtx_setting_t *)get_packet_setting(m);
 
 #line 39
-  if (p_ts->batched) {
-    return p_ts->size;
+  if (__nesc_ntoh_int8(p_ts->batched.nxdata)) {
+    return __nesc_ntoh_uint8(p_ts->size.nxdata);
     }
 #line 41
   return 0;
@@ -5857,7 +5886,23 @@ inline static void CC2420ActiveMessageP__AMPacket__setType(message_t * amsg, am_
 #line 162
 }
 #line 162
-# 327 "/usr/lib/ncc/nesc_nx.h"
+# 315 "/usr/lib/ncc/nesc_nx.h"
+static __inline  uint16_t __nesc_hton_uint16(void * target, uint16_t value)
+#line 315
+{
+  uint8_t *base = target;
+
+#line 317
+  base[1] = value;
+  base[0] = value >> 8;
+  return value;
+}
+
+
+
+
+
+
 static __inline  uint16_t __nesc_hton_leuint16(void * target, uint16_t value)
 #line 327
 {
@@ -5878,7 +5923,7 @@ static __inline void set_packet_dest(message_t *m, am_addr_t dest)
 
 #line 65
   __nesc_hton_leuint16(p_header->dest.nxdata, dest);
-  p_ts->addr = dest;
+  __nesc_hton_uint16(p_ts->addr.nxdata, dest);
 }
 
 # 58 "../../tos/chips/cc2420/x-packet/CC2420xPacketP.nc"
@@ -5998,7 +6043,7 @@ static __inline void set_packet_header(message_t *m, uint8_t dsn)
   __nesc_hton_leuint16(p_header->destpan.nxdata, 0);
   __nesc_hton_leuint16(p_header->src.nxdata, TOS_NODE_ID);
   if (__nesc_ntoh_leuint16(p_header->dest.nxdata) != AM_BROADCAST_ADDR) {
-      p_ts->ack = TRUE;
+      __nesc_hton_int8(p_ts->ack.nxdata, TRUE);
 
       (__nesc_temp43 = p_header->fcf.nxdata, __nesc_hton_leuint16(__nesc_temp43, __nesc_ntoh_leuint16(__nesc_temp43) | (1 << IEEE154_FCF_ACK_REQ)));
     }
@@ -6033,7 +6078,7 @@ static inline error_t CC2420xLplP__BulkSend__send(message_t *msg, uint8_t len)
 #line 129
     {
       rtx_setting_t *p_ts = (rtx_setting_t *)get_packet_setting(msg);
-      uint8_t size = p_ts->size;
+      uint8_t size = __nesc_ntoh_uint8(p_ts->size.nxdata);
 
 #line 132
       CC2420xLplP__lpl_status = LPL_X_TX;
@@ -6143,7 +6188,7 @@ static inline error_t CC2420xLplP__Send__send(message_t *msg, uint8_t len)
       set_packet_header(msg, CC2420xLplP__lpl_dsn);
       set_payload_length(msg, len);
       set_tx_setting(msg, &CC2420xLplP__tx_status);
-      debug = CC2420xLplP__tx_status.size;
+      debug = __nesc_ntoh_uint8(CC2420xLplP__tx_status.size.nxdata);
 
       printf_u8(1, &debug);
       disable_other_interrupts(&CC2420xLplP__ie_status);
@@ -6276,6 +6321,9 @@ static __inline void enable_other_interrupts(interrupt_status_t *status)
 static __inline void CC2420xRTxP__cc2420_ack_rx_except(void )
 #line 944
 {
+  unsigned char __nesc_temp53;
+  unsigned char *__nesc_temp52;
+#line 945
   uint8_t type = 0xff;
   cc2420_header_t *m_rx_header = (cc2420_header_t *)get_packet_header(CC2420xRTxP__m_rx_buf.p_rx_buf);
   cc2420_header_t *m_tx_header = (cc2420_header_t *)get_packet_header(CC2420xRTxP__p_tx_buf);
@@ -6291,8 +6339,8 @@ static __inline void CC2420xRTxP__cc2420_ack_rx_except(void )
       type == IEEE154_TYPE_ACK
        && __nesc_ntoh_leuint8(m_rx_header->dsn.nxdata) == __nesc_ntoh_leuint8(m_tx_header->dsn.nxdata)) {
           __nesc_hton_int8(((cc2420_metadata_t *)CC2420xRTxP__p_tx_buf->metadata)->ack.nxdata, TRUE);
-          CC2420xRTxP__tx_setting->size--;
-          if (CC2420xRTxP__tx_setting->size != 0) {
+          (__nesc_temp52 = CC2420xRTxP__tx_setting->size.nxdata, __nesc_hton_uint8(__nesc_temp52, (__nesc_temp53 = __nesc_ntoh_uint8(__nesc_temp52)) - 1), __nesc_temp53);
+          if (__nesc_ntoh_uint8(CC2420xRTxP__tx_setting->size.nxdata) != 0) {
               CC2420xRTxP__rtx_status = S_TX_DETECT;
               CC2420xRTxP__tx_counter = 0;
               CC2420xRTxP__p_tx_buf = (message_t *)((uint8_t *)CC2420xRTxP__p_tx_buf + sizeof(message_t ));
@@ -6314,7 +6362,7 @@ static __inline void CC2420xRTxP__cc2420_ack_rx_except(void )
           CC2420xRTxP__tx_counter++;
           write_ram(CC2420_TXFIFO, sizeof(cc2420_header_t ) + sizeof(rtx_setting_t ), &CC2420xRTxP__tx_counter, 1);
           if (CC2420xRTxP__tx_counter == 64) {
-              if (CC2420xRTxP__tx_setting->size != 0) {
+              if (__nesc_ntoh_uint8(CC2420xRTxP__tx_setting->size.nxdata) != 0) {
                   CC2420xRTxP__rtx_status = S_TX_DETECT;
                   CC2420xRTxP__tx_counter = 0;
                   CC2420xRTxP__p_tx_buf = (message_t *)((uint8_t *)CC2420xRTxP__p_tx_buf + sizeof(message_t ));
@@ -6387,6 +6435,9 @@ static __inline void CC2420xRTxP__cc2420_ack_wait_tx(void )
 static __inline void CC2420xRTxP__cc2420_end_rx(void )
 #line 801
 {
+  unsigned char __nesc_temp47;
+  unsigned char *__nesc_temp46;
+#line 802
   uint8_t i;
   bool duplicate = FALSE;
   uint8_t *p_buf = get_packet_header(CC2420xRTxP__m_rx_buf.p_rx_buf);
@@ -6405,11 +6456,11 @@ static __inline void CC2420xRTxP__cc2420_end_rx(void )
 
       if ((
 #line 814
-      ! m_ptr_setting->ack
-       || (m_ptr_setting->addr != TOS_NODE_ID
-       && (m_ptr_setting->addr != 0xFFFE
-       || m_ptr_setting->metric - CC2420xRTxP__local_metric < m_ptr_setting->progress)))
-       || !(m_ptr_setting->ci && m_ptr_setting->hop != 0)) {
+      ! __nesc_ntoh_int8(m_ptr_setting->ack.nxdata)
+       || (__nesc_ntoh_uint16(m_ptr_setting->addr.nxdata) != TOS_NODE_ID
+       && (__nesc_ntoh_uint16(m_ptr_setting->addr.nxdata) != 0xFFFE
+       || __nesc_ntoh_uint16(m_ptr_setting->metric.nxdata) - CC2420xRTxP__local_metric < __nesc_ntoh_uint16(m_ptr_setting->progress.nxdata))))
+       || !(__nesc_ntoh_int8(m_ptr_setting->ci.nxdata) && __nesc_ntoh_uint8(m_ptr_setting->hop.nxdata) != 0)) {
           radio_flush_tx();
           radio_flush_rx();
           return;
@@ -6427,7 +6478,7 @@ static __inline void CC2420xRTxP__cc2420_end_rx(void )
         }
       if (!duplicate) {
 
-          m_ptr_setting->hop--;
+          (__nesc_temp46 = m_ptr_setting->hop.nxdata, __nesc_hton_uint8(__nesc_temp46, (__nesc_temp47 = __nesc_ntoh_uint8(__nesc_temp46)) - 1), __nesc_temp47);
           memcpy(&CC2420xRTxP__rx_setting, m_ptr_setting, sizeof(rtx_setting_t ));
 
           CC2420xRTxP__m_rx_buf.occ_size++;
@@ -7312,26 +7363,14 @@ static __inline  uint32_t __nesc_hton_uint32(void * target, uint32_t value)
   return value;
 }
 
-#line 315
-static __inline  uint16_t __nesc_hton_uint16(void * target, uint16_t value)
-#line 315
-{
-  uint8_t *base = target;
-
-#line 317
-  base[1] = value;
-  base[0] = value >> 8;
-  return value;
-}
-
 # 80 "/opt/tinyos-main-read-only/tos/interfaces/AMSend.nc"
-inline static error_t /*AMQueueP.AMQueueImplP*/AMQueueImplP__0__AMSend__send(am_id_t arg_0x2b7ac57bac70, am_addr_t addr, message_t * msg, uint8_t len){
+inline static error_t /*AMQueueP.AMQueueImplP*/AMQueueImplP__0__AMSend__send(am_id_t arg_0x2b3c279f6c70, am_addr_t addr, message_t * msg, uint8_t len){
 #line 80
   unsigned char __nesc_result;
 #line 80
 
 #line 80
-  __nesc_result = CC2420ActiveMessageP__AMSend__send(arg_0x2b7ac57bac70, addr, msg, len);
+  __nesc_result = CC2420ActiveMessageP__AMSend__send(arg_0x2b3c279f6c70, addr, msg, len);
 #line 80
 
 #line 80
@@ -7520,8 +7559,8 @@ static __inline void set_packet_bulk(message_t *m, uint8_t size)
   rtx_setting_t *p_ts = (rtx_setting_t *)get_packet_setting(m);
 
 #line 77
-  p_ts->batched = TRUE;
-  p_ts->size = size;
+  __nesc_hton_int8(p_ts->batched.nxdata, TRUE);
+  __nesc_hton_uint8(p_ts->size.nxdata, size);
 }
 
 # 18 "../../tos/chips/cc2420/x-packet/CC2420xPacketP.nc"
@@ -7603,9 +7642,9 @@ static inline void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC__0__Timer
 }
 
 # 83 "/opt/tinyos-main-read-only/tos/lib/timer/Timer.nc"
-inline static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC__0__Timer__fired(uint8_t arg_0x2b7ac5a25020){
+inline static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC__0__Timer__fired(uint8_t arg_0x2b3c27c61020){
 #line 83
-  switch (arg_0x2b7ac5a25020) {
+  switch (arg_0x2b3c27c61020) {
 #line 83
     case 0U:
 #line 83
@@ -7621,7 +7660,7 @@ inline static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC__0__Timer
 #line 83
     default:
 #line 83
-      /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC__0__Timer__default__fired(arg_0x2b7ac5a25020);
+      /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC__0__Timer__default__fired(arg_0x2b3c27c61020);
 #line 83
       break;
 #line 83
@@ -8195,9 +8234,9 @@ static inline void SchedulerBasicP__TaskBasic__default__runTask(uint8_t id)
 }
 
 # 75 "/opt/tinyos-main-read-only/tos/interfaces/TaskBasic.nc"
-inline static void SchedulerBasicP__TaskBasic__runTask(uint8_t arg_0x2b7ac50aed50){
+inline static void SchedulerBasicP__TaskBasic__runTask(uint8_t arg_0x2b3c272ead50){
 #line 75
-  switch (arg_0x2b7ac50aed50) {
+  switch (arg_0x2b3c272ead50) {
 #line 75
     case /*AMQueueP.AMQueueImplP*/AMQueueImplP__0__CancelTask:
 #line 75
@@ -8225,7 +8264,7 @@ inline static void SchedulerBasicP__TaskBasic__runTask(uint8_t arg_0x2b7ac50aed5
 #line 75
     default:
 #line 75
-      SchedulerBasicP__TaskBasic__default__runTask(arg_0x2b7ac50aed50);
+      SchedulerBasicP__TaskBasic__default__runTask(arg_0x2b3c272ead50);
 #line 75
       break;
 #line 75
@@ -8661,7 +8700,9 @@ static void /*Msp430TimerC.Msp430TimerB0*/Msp430TimerCapComP__3__Event__fired(vo
 __attribute((wakeup)) __attribute((interrupt(0x0018)))  void sig_TIMERB1_VECTOR(void )
 #line 170
 {
-
+  unsigned char __nesc_temp45;
+  unsigned char *__nesc_temp44;
+#line 172
   uint16_t TB1_irq = (TBR - TBCCR1 - 42) << 1;
 
   uint16_t TB2_irq = (TBR - TBCCR2 - 61) << 1;
@@ -8754,7 +8795,7 @@ __attribute((wakeup)) __attribute((interrupt(0x0018)))  void sig_TIMERB1_VECTOR(
 
                 CC2420xRTxP__cc2420_strobe_tx();
 
-                if (CC2420xRTxP__p_tx_buf != (void *)0 && CC2420xRTxP__tx_setting->priority) {
+                if (CC2420xRTxP__p_tx_buf != (void *)0 && __nesc_ntoh_int8(CC2420xRTxP__tx_setting->priority.nxdata)) {
 
                     CC2420xRTxP__rtx_status = S_TX_SFD;
                     CC2420xRTxP__cc2420_load_tx();
@@ -8763,7 +8804,7 @@ __attribute((wakeup)) __attribute((interrupt(0x0018)))  void sig_TIMERB1_VECTOR(
 #line 258
                   if (CC2420xRTxP__m_rx_buf.occ_size != 0 && CC2420xRTxP__m_rx_buf.occ_size != CC2420xRTxP__m_rx_buf.max_size) {
 
-                      if (CC2420xRTxP__rx_setting.ci && CC2420xRTxP__rx_setting.hop < 7) {
+                      if (__nesc_ntoh_int8(CC2420xRTxP__rx_setting.ci.nxdata) && __nesc_ntoh_uint8(CC2420xRTxP__rx_setting.hop.nxdata) < 7) {
 
                           CC2420xRTxP__rtx_status = S_CI_SFD;
                           if (CC2420xRTxP__p_tx_buf == (void *)0) {
@@ -8781,7 +8822,7 @@ __attribute((wakeup)) __attribute((interrupt(0x0018)))  void sig_TIMERB1_VECTOR(
                         }
                       else {
 #line 272
-                        if (CC2420xRTxP__rx_setting.batched) {
+                        if (__nesc_ntoh_int8(CC2420xRTxP__rx_setting.batched.nxdata)) {
 
                             radio_flush_tx();
                             CC2420xRTxP__rtx_status = S_RX_DETECT;
@@ -8844,14 +8885,14 @@ __attribute((wakeup)) __attribute((interrupt(0x0018)))  void sig_TIMERB1_VECTOR(
               {
 
 
-                if (CC2420xRTxP__p_tx_buf != (void *)0 && CC2420xRTxP__tx_setting->priority) {
+                if (CC2420xRTxP__p_tx_buf != (void *)0 && __nesc_ntoh_int8(CC2420xRTxP__tx_setting->priority.nxdata)) {
                     CC2420xRTxP__rtx_status = S_TX_SFD;
                     CC2420xRTxP__cc2420_signal_detect(TBCCR1);
                   }
                 else {
 #line 319
                   if (CC2420xRTxP__m_rx_buf.occ_size != 0 && CC2420xRTxP__m_rx_buf.occ_size != CC2420xRTxP__m_rx_buf.max_size) {
-                      if (CC2420xRTxP__rx_setting.batched) {
+                      if (__nesc_ntoh_int8(CC2420xRTxP__rx_setting.batched.nxdata)) {
                           CC2420xRTxP__rtx_status = S_RX_DETECT;
                           TBCCR5 = TBCCR1 + 288;
                           CC2420xRTxP__detect_duration = TBCCR1;
@@ -9171,8 +9212,8 @@ __attribute((wakeup)) __attribute((interrupt(0x0018)))  void sig_TIMERB1_VECTOR(
                     printf_u8(1, &CC2420xRTxP__tx_counter);
                     write_ram(CC2420_TXFIFO, sizeof(cc2420_header_t ) + sizeof(rtx_setting_t ), &CC2420xRTxP__tx_counter, 1);
                     if (CC2420xRTxP__tx_counter == 64) {
-                        CC2420xRTxP__tx_setting->size--;
-                        if (CC2420xRTxP__tx_setting->size != 0) {
+                        (__nesc_temp44 = CC2420xRTxP__tx_setting->size.nxdata, __nesc_hton_uint8(__nesc_temp44, (__nesc_temp45 = __nesc_ntoh_uint8(__nesc_temp44)) - 1), __nesc_temp45);
+                        if (__nesc_ntoh_uint8(CC2420xRTxP__tx_setting->size.nxdata) != 0) {
                             CC2420xRTxP__rtx_status = S_TX_SFD;
                             CC2420xRTxP__p_tx_buf = (message_t *)((uint8_t *)CC2420xRTxP__p_tx_buf + sizeof(message_t ));
                             CC2420xRTxP__cc2420_load_tx();
@@ -9335,7 +9376,7 @@ static void CC2420xLplP__SubSend__sendDone(message_t *msg, rtx_setting_t *ts, er
     CC2420xLplP__lpl_dsn++;
   }
 
-  if (ts->size == 1) {
+  if (__nesc_ntoh_uint8(ts->size.nxdata) == 1) {
       CC2420xLplP__Send__sendDone(msg, error);
     }
   else 
