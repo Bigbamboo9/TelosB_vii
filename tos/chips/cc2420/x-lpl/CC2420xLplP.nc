@@ -68,7 +68,6 @@ module CC2420xLplP {
         cc2420_rx_start();
       }
       call SubReceive.rxOn();
-      call Leds.led0Toggle();
     }
   }
 
@@ -78,14 +77,10 @@ module CC2420xLplP {
     }
     call SleepTimer.stop();
     atomic {
-      uint8_t debug;
       lpl_status = LPL_X_TX;
       set_packet_header(msg, lpl_dsn);
       set_payload_length(msg, len);
       set_tx_setting(msg, &tx_status);
-      debug = tx_status.size;
-      // debug = ((rtx_setting_t*)get_packet_setting(msg))->size;
-      printf_u8(1, &debug);
       disable_other_interrupts(&ie_status);
       // keep the dco accurate!
       msp430_sync_dco();
@@ -201,12 +196,12 @@ module CC2420xLplP {
       rtx_time->rtx_total_time += (rtx_time->pkt_recv + rtx_time->pkt_send) * rtx_time->pkt_rtx_time;
       rtx_time->ack_total_time += rtx_time->pkt_ack * rtx_time->ack_time;
       rtx_time->turnaround_total_time += rtx_time->pkt_turnaround * rtx_time->turnaround_time;
-      /**
+
       print_high = rtx_time->channel_detection >> 16;
       printf_u16(1, &print_high);
       print_low = rtx_time->channel_detection & 0xFFFF;
       printf_u16(1, &print_low);
-      **/
+
     }
   }
 
@@ -217,8 +212,8 @@ module CC2420xLplP {
       // TODO: compensate the frozen timer
       signal RadioTimerUpdate.counterUpdate(radio_time_perround+time+radio_start_time, rtx_time->calibration_factor);
       signal RadioTimerUpdate.triggerUpdate();
-      if (lpl_status == LPL_X_RX)
-        call SleepTimer.startOneShot(CC2420_LPL_PERIOD);
+      // restart the channel timer after RTx
+      call SleepTimer.startOneShot(CC2420_LPL_PERIOD);
       lpl_status = LPL_X_IDLE;
       enable_other_interrupts(&ie_status);
     }

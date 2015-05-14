@@ -171,21 +171,23 @@ module CC2420xRTxP {
     // the delta ticks for TB1 campature interrupt
     uint16_t TB1_irq = ( (rtimer_arch_now_dco() - TBCCR1) - 42 ) << 1;
     // the delta ticks for TB2 (ACK) compare interrupt
-    uint16_t TB2_irq = ( (rtimer_arch_now_dco() - TBCCR2) - 61 ) << 1;
+    // uint16_t TB2_irq = ( (rtimer_arch_now_dco() - TBCCR2) - 61 ) << 1; // w printf
+    uint16_t TB2_irq = ( (rtimer_arch_now_dco() - TBCCR2) - 56 ) << 1; // w/o printf
     uint8_t debug;
     tbiv = TBIV;
     tb1_buffer = TBCCR1;
 
-    printf_u16(1, &tbiv);
+    // printf_u16(1, &tbiv);
 
     if (tbiv == 2) {
-      printf_u16(1, &TB1_irq);
+      // printf_u16(1, &TB1_irq);
       // compensate the if-else jump for ACK waiting timer
       if ( (rtx_status == S_TX_ACK || rtx_status == S_CI_ACK) && ( !(P4IN & (1 << 1)) ) ) {
         // debug = 11;
         // printf_u8(1, &debug);
         /** ack has been received **/
         ack_duration = TBCCR1 - ack_duration;
+        detect_duration = TBCCR1;
         // compensate the if-else jump for RX_ACK
         if ( rtx_status == S_RX_ACK && (!(P4IN & (1 << 1))));
         // turn off the SFD abortion timer
@@ -225,6 +227,7 @@ module CC2420xRTxP {
         // printf_u8(1, &debug);
         /** ack has been sent **/
         ack_duration = TBCCR1 - ack_duration;
+        detect_duration = TBCCR1;
         
         // turn off the SFD abortion timer
         TBCCTL3 &= ~(CCIE | CCIFG);
@@ -361,6 +364,7 @@ module CC2420xRTxP {
         // turn off receive execption timer
         rx_duration = TBCCR1 - rx_duration;
         TBCCTL3 &= ~(CCIE | CCIFG);
+        detect_duration = TBCCR1;
         if ( (rtx_status== S_TX_SFD) && (!(P4IN & (1 << 1))) );
         // set interrupt edge
         TBCCTL1 = CM_1 | CAP | SCS | CCIE;
@@ -395,6 +399,7 @@ module CC2420xRTxP {
         // printf_u8(1, &debug);
         /** packet transmission has finished **/
         tx_duration = TBCCR1 - tx_duration;
+        detect_duration = TBCCR1;
         // turn off SFD abortion timer
         TBCCTL3 &= ~(CCIE | CCIFG);
         // set interrupt edge
@@ -434,6 +439,7 @@ module CC2420xRTxP {
         // debug = 55;
         // printf_u8(1, &debug);
         /** CI transmission end **/
+        detect_duration = TBCCR1;
         // turn off reception exception timer
         TBCCTL3 &= ~(CCIE | CCIFG);
 
@@ -539,6 +545,7 @@ module CC2420xRTxP {
     } else {
       switch(tbiv) {
         case 4:
+          detect_duration = TBCCR2;
           TBCCTL2 &= ~(CCIE | CCIFG);
           // ACK waiting period fired
           if (TB2_irq <= 8) {
@@ -570,13 +577,13 @@ module CC2420xRTxP {
                 radio_flush_tx();
                 rtx_status = S_RX_DETECT;
                 TBCCR5 = TBCCR1 + LISTENING_TAIL;
-                detect_duration = TBCCR1;
+                detect_duration = TBCCR2;
                 TBCCTL5 = CCIE;
               }
             } else if (rtx_status == S_TX_ACK) {
               rtx_status = S_TX_SFD;
               tx_counter++;
-              printf_u8(1, &tx_counter);
+              // printf_u8(1, &tx_counter);
               write_ram(CC2420_TXFIFO, sizeof(cc2420_header_t)+sizeof(rtx_setting_t), &tx_counter, 1);
               if (tx_counter == PREAMBLE_PACKET_LENGTH) {
                 tx_setting->size--;
@@ -589,7 +596,7 @@ module CC2420xRTxP {
                   radio_flush_tx();
                   rtx_status = S_RX_DETECT;
                   TBCCR5 = TBCCR1 + LISTENING_TAIL;
-                  detect_duration = TBCCR1;
+                  detect_duration = TBCCR2;
                   TBCCTL5 = CCIE;
                 }
               }
@@ -608,22 +615,38 @@ module CC2420xRTxP {
                   radio_flush_tx();
                   rtx_status = S_RX_DETECT;
                   TBCCR5 = TBCCR1 + LISTENING_TAIL;
-                  detect_duration = TBCCR1;
+                  detect_duration = TBCCR2;
                   TBCCTL5 = CCIE;
                 }
               }
             }
           } else {
-            printf_u16(1, &TB2_irq);
+            // printf_u16(1, &TB2_irq);
             if (p_tx_buf != NULL) {
               tx_counter++;
-              rtx_status = S_TX_DETECT;
-              cc2420_signal_detect(TBCCR2);
+              if (tx_counter == PREAMBLE_PACKET_LENGTH) {
+                tx_setting->size--;
+                if (tx_setting->size != 0) {
+                  rtx_status = S_TX_SFD;
+                  p_tx_buf = (message_t*)((uint8_t*)p_tx_buf + sizeof(message_t));
+                  cc2420_load_tx();
+                  tx_counter = 0;
+                } else {
+                  radio_flush_tx();
+                  rtx_status = S_RX_DETECT;
+                  TBCCR5 = TBCCR1 + LISTENING_TAIL;
+                  detect_duration = TBCCR2;
+                  TBCCTL5 = CCIE;
+                }
+              } else {
+                rtx_status = S_TX_DETECT;
+                cc2420_signal_detect(TBCCR2);
+              }
             } else {
               radio_flush_tx();
               rtx_status = S_RX_DETECT;
               TBCCR5 = TBCCR1 + LISTENING_TAIL;
-              detect_duration = TBCCR1;
+              detect_duration = TBCCR2;
               TBCCTL5 = CCIE;
             }
           }
@@ -850,10 +873,12 @@ module CC2420xRTxP {
   }
   
   static inline void cc2420_ack_strobe_rx() {
-    strobe( CC2420_SACK );
-    TBCCTL1 &= ~CCIFG;
     radio_flush_rx();
+    TBCCTL1 &= ~CCIFG;
+    detect_duration = rtimer_arch_now_dco() - detect_duration;
     turn_around = rtimer_arch_now_dco();
+    strobe( CC2420_SACK );
+    rtx_time.channel_detection += detect_duration;
   }
 
   static inline void cc2420_load_tx() {
@@ -863,13 +888,21 @@ module CC2420xRTxP {
   static inline void cc2420_strobe_tx() {
     radio_flush_rx();
     TBCCTL1 &= ~CCIFG;
+    detect_duration = rtimer_arch_now_dco() - detect_duration;
+    // printf_u16(1, &detect_duration);
     strobe( CC2420_STXON );
+    rtx_time.channel_detection += detect_duration;
   }
 
   static inline void cc2420_ack_wait_tx() {
+    radio_flush_rx();
+    TBCCTL1 &= ~CCIFG;
+    detect_duration = rtimer_arch_now_dco() - detect_duration;
+    // printf_u16(1, &detect_duration);
     // TBCCR2 = TBCCR1 + ACK_WAITING_PERIOD;
     TBCCR2 = rtimer_arch_now_dco() + rtx_time.turnaround_time + rtx_time.ack_time;
     TBCCTL2 = CCIE;
+    rtx_time.channel_detection += detect_duration;
   }
 
   static inline void cc2420_ack_rx() {

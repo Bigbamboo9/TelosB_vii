@@ -13,6 +13,11 @@
 #define CC2420_X_DEF_RFPOWER 2
 #endif
 
+#ifndef CC2420_X_DEF_CHANNEL
+#define CC2420_X_DEF_CHANNEL 26
+#endif
+
+
 /*
  * /brief define the operations on radio, interrupt enable and io control registers.
  */
@@ -121,6 +126,13 @@ static inline void cc2420_tx_setting() {
   setting &= ( (CC2420_X_DEF_RFPOWER & 0x1F) << CC2420_TXCTRL_PA_LEVEL );
   set_register(CC2420_TXCTRL, setting);
 }
+// Operating frequency
+static inline void cc2420_channel_setting() {
+  uint16_t setting = get_register(CC2420_FSCTRL);
+  setting &= 0xFE00;
+  setting |= ( 0x1FFF & (357 + 5 * (CC2420_X_DEF_CHANNEL - 11)) );
+  set_register(CC2420_FSCTRL, setting);
+}
 // Modem Control Register
 static inline void cc2420_mod_setting() {
   // reserved frame types(100, 101, 110, 111) are rejected by address recognition as default
@@ -203,6 +215,7 @@ void cc2420_init() {
   // register settings
   cc2420_mod_setting();
   cc2420_sec_setting();
+  cc2420_channel_setting();
   cc2420_rx_setting();
   cc2420_tx_setting();
   cc2420_io_setting();

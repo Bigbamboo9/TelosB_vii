@@ -1,6 +1,7 @@
 COMPONENT=RadioCountToLedsAppC
 
 CFLAGS += -DENABLE_X
+CFLAGS += -DCC2420_X_DEF_RFPOWER=31
 
 CFLAGS += -I../../tos/chips/msp430
 CFLAGS += -I../../tos/chips/msp430/timer

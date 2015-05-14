@@ -65,8 +65,8 @@ implementation {
   uint16_t counter = 0;
  
   event void Boot.booted() {
-    locked = FALSE;
-    // locked = TRUE;
+    // locked = FALSE;
+    locked = TRUE;
     memset((uint8_t*)(&packet), 0x0, sizeof(message_t));
     uart_init();
     call AMControl.start();
@@ -74,6 +74,7 @@ implementation {
   }
  
   event void MilliTimer.fired() {
+    call Leds.led0Toggle();
     counter++;
     if (locked)
       return;
