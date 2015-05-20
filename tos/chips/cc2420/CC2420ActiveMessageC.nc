@@ -44,7 +44,8 @@ implementation {
   PacketAcknowledgements = CC2420xPacketP;
 
   AM.SubSend -> CC2420xLplC;
-  AM.SubReceive -> CC2420xLplC;
+  AM.SubReceive -> CC2420xLplC.Receive;
+  AM.SubSnoop -> CC2420xLplC.Snoop;
   AM.BulkSend -> CC2420xLplC;
   AM.LplxPacket -> CC2420xPacketP;
   AM.Packet -> CC2420xPacketP;

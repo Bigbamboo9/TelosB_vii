@@ -14,6 +14,7 @@ module CC2420ActiveMessageP @safe() {
     interface Send as SubSend;
     interface BulkSend;
     interface Receive as SubReceive;
+    interface Receive as SubSnoop;
     interface LplxPacket;
     interface AMPacket;
     interface Packet;
@@ -70,6 +71,11 @@ implementation {
     } else {
       return signal Snoop.receive[call AMPacket.type(msg)](msg, payload, len);
     }
+  }
+
+  /** SubSnoop Events **/
+  event message_t* SubSnoop.receive(message_t* msg, void* payload, uint8_t len) {
+    return signal Snoop.receive[call AMPacket.type(msg)](msg, payload, len);
   }
   
   /** RadioBackoff **/

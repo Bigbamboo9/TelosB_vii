@@ -11,7 +11,10 @@
 #define RX_BUFFER_SIZE         7
 /** Length of IEEE 802.15.4 ACK frame **/
 #define ACK_LENGTH             5
+/** Opportunistic routing address **/
 #define OPPORTUNISTIC_ROUTING_ADDR 0xFFFE
+/** packet header length **/
+#define CC2420_X_HEADER_LENGTH (sizeof(cc2420_header_t) + sizeof(rtx_setting_t) + 1)
 /** Interval between two adjacent preamble packets transmission **/
 /** 128 us turnaround + 160 us 5 bytes data transmission **/
 #define ACK_WAITING_PERIOD     288
@@ -29,6 +32,8 @@
 #define CI_HOP_THRESHOLD       7
 /* DELTA_2 assumes an ACLK of 32768 Hz */
 #define DELTA_II               ((MSP430_CPU_SPEED) / 32768)
+/* Threshold of continueous duplicate to trigger force sleep */
+#define DUPLICATE_COUNT        2
 
 
 /* -------------------------- Clock Capture ------------------------- */
