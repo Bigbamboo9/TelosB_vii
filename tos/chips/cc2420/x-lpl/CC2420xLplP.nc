@@ -196,12 +196,12 @@ module CC2420xLplP {
       rtx_time->rtx_total_time += (rtx_time->pkt_recv + rtx_time->pkt_send) * rtx_time->pkt_rtx_time;
       rtx_time->ack_total_time += rtx_time->pkt_ack * rtx_time->ack_time;
       rtx_time->turnaround_total_time += rtx_time->pkt_turnaround * rtx_time->turnaround_time;
-/*
+
       print_high = rtx_time->channel_detection >> 16;
       printf_u16(1, &print_high);
       print_low = rtx_time->channel_detection & 0xFFFF;
       printf_u16(1, &print_low);
-*/
+
     }
   }
 

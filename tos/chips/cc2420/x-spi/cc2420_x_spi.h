@@ -57,11 +57,24 @@ static inline void fast_continue_read_one(uint8_t* buf) {
   buf[0] = U0RXBUF;
 }
 
+static inline void fast_continue_read_tail(uint8_t* buf, uint8_t len) {
+  uint8_t idx;
+  uint8_t tmp;
+
+  for (idx = 0; idx < len; idx++) {
+    while ( !(IFG1 & UTXIFG0) );
+    U0TXBUF = 0;
+    while ( !(IFG1 & URXIFG0) );
+    buf[idx] = U0RXBUF;
+  }
+
+  CC2420_SPI_DISABLE();
+}
+
 static inline void fast_read_any(uint8_t* buf, uint8_t len) {
   uint8_t idx;
   uint8_t tmp;
 
-  // CC2420_SPI_DISABLE();
   CC2420_SPI_ENABLE();
 
   U0TXBUF = CC2420_RXFIFO | 0x40;

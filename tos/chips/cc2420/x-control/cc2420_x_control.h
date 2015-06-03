@@ -4,6 +4,7 @@
 #include "CC2420.h"
 #include "cc2420_x_spi.h"
 #include "cc2420_x_timer.h"
+#include "serial_fast_print.h"
 
 #ifndef CC2420_X_PACKET_SIZE
 #define CC2420_X_PACKET_SIZE 77

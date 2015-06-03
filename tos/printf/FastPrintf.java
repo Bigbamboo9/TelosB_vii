@@ -45,7 +45,8 @@ public class FastPrintf {
                                 }else if (int_print && int_len == 0) {
 					int_len = b;
 				}else if (u8_print && u8_len != 0) {
-					System.out.print(b + " ");
+                                        low = b & 0x000000ff;
+					System.out.print(low + " ");
 					u8_len--;
 					if (u8_len == 0) {
 						System.out.println();
