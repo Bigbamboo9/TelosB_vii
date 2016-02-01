@@ -20,18 +20,20 @@
 #define ACK_WAITING_PERIOD     288
 /** Maximum number of the packets in preamble **/
 #define PREAMBLE_PACKET_LENGTH 64   // when packet size is 64 bytes and sleep period is 128 ms
-/** Maximum number of RSSI sampling (128 + 160 + 128) / 32 + 9 **/
+/** Maximum number of RSSI sampling (192 + 160 + 192) / 32 + 5 **/
 #define SIGNAL_DETECT_PERIOD   22
+// #define SIGNAL_DETECT_PERIOD   44
 /** Tail listening period **/
-#define LISTENING_TAIL         288
+// #define LISTENING_TAIL         2048
+#define LISTENING_TAIL         22222
 /** Radio keep awake only when the number of rssi samples that are 3dBm larger than the noisefloor is larger than this threshold **/
 #define RSSI_UP_THRESHOLD      7
 /** Rssi PAPR threshold **/
-#define RSSI_PAPR_THRESHOLD    2
+#define RSSI_PAPR_THRESHOLD    6
 /** CI Hop threshold **/
 #define CI_HOP_THRESHOLD       7
 /* DELTA_2 assumes an ACLK of 32768 Hz */
-#define DELTA_II               ((MSP430_CPU_SPEED) / 32768)
+#define DELTA_II               ((MSP430_CPU_SPEED) / 32768UL)
 /* Threshold of continueous duplicate to trigger force sleep */
 #define DUPLICATE_COUNT        2
 
@@ -88,6 +90,13 @@ typedef nx_struct {
   nx_uint8_t hop;
   nx_uint8_t preamble_dsn;
 } rtx_setting_t;
+
+typedef nx_struct {
+  nx_uint8_t length;
+  nx_uint16_t fcf;
+  nx_uint8_t dsn;
+  nx_uint16_t fcs;
+} ack_frame_t;
 
 typedef struct {
   bool received;
@@ -175,6 +184,7 @@ static inline void msp430_sync_dco() {
         BCSCTL1++;
       }
     } else {
+      TBCCTL6 &= ~CCIFG;
       break;
     }
   }

@@ -77,6 +77,7 @@ implementation {
 
   event void Timer.fired() {
         uint8_t i = 0;
+        uint16_t* p;
         uint16_t t_cap_h0 = 0;
         uint16_t t_cap_h1 = 0;
         uint16_t t_cap_l0 = 0;
@@ -87,19 +88,23 @@ implementation {
 		dummyVar1[i] = 100 + i;
 		dummyVar2[i] = 2222 + i;
 	}
-	printf_u8(8, dummyVar1);
-	printf_u16(8, dummyVar2);
-        CAPTURE_NEXT_CLOCK_TICK(t_cap_h0, t_cap_l0);
-        CAPTURE_NEXT_CLOCK_TICK(t_cap_h1, t_cap_l1);
-        dummyVar2[0] = t_cap_h1 - t_cap_h0;
-        dummyVar2[1] = t_cap_l1 - t_cap_l0;
-        printf_u16(2, dummyVar2);
+        for (i=0;i<8;i+=1) {
+          p = &dummyVar2[(7+i)%8];
+          printf_u16(1, p);
+        }
+	// printf_u8(8, dummyVar1);
+	// printf_u16(8, dummyVar2);
+        // CAPTURE_NEXT_CLOCK_TICK(t_cap_h0, t_cap_l0);
+        // CAPTURE_NEXT_CLOCK_TICK(t_cap_h1, t_cap_l1);
+        // dummyVar2[0] = t_cap_h1 - t_cap_h0;
+        // dummyVar2[1] = t_cap_l1 - t_cap_l0;
+        // printf_u16(2, dummyVar2);
 
-        t_cap_l0 = 65534;
-        t_cap_h0 = 2;
+        // t_cap_l0 = 65534;
+        // t_cap_h0 = 2;
         // t_cap_h1 = (t_cap_h0 - t_cap_l0) % 7;
-        t_cap_h1 = t_cap_h0 - t_cap_l0 - 2;
-        printf_u16(1, &t_cap_h1);
+        // t_cap_h1 = t_cap_h0 - t_cap_l0 - 2;
+        // printf_u16(1, &t_cap_h1);
   }
 }
 

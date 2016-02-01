@@ -1,5 +1,6 @@
 #include <Ieee154.h> 
 #include "CC2420.h"
+#include "serial_fast_print.h"
 
 module CC2420ActiveMessageP @safe() {
   provides {
@@ -67,6 +68,8 @@ implementation {
   /** SubReceive Events **/
   event message_t* SubReceive.receive(message_t* msg, void* payload, uint8_t len) {
     if (call AMPacket.isForMe(msg)) {
+      // uint8_t type = call AMPacket.type(msg);
+      // printf_u8(1, &type);
       return signal Receive.receive[call AMPacket.type(msg)](msg, payload, len);
     } else {
       return signal Snoop.receive[call AMPacket.type(msg)](msg, payload, len);

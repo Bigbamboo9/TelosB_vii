@@ -23,6 +23,10 @@ module CC2420xPacketP {
     return get_packet_bulk(m);
   }
 
+  command void LplxPacket.clearSettings(message_t* m) {
+    clear_packet_settings(m);
+  }
+
   /** Interface PacketAcknowledgements **/
   async command error_t Acks.requestAck( message_t* p_msg ) {
     ((cc2420_header_t*)get_packet_header(p_msg))->fcf |= 1 << IEEE154_FCF_ACK_REQ;
@@ -42,7 +46,8 @@ module CC2420xPacketP {
 
   /** Interface AMpacket **/
   command am_addr_t AMPacket.address() {
-    return TOS_AM_ADDRESS;
+    // return TOS_AM_ADDRESS;
+    return TOS_NODE_ID;
   }
 
   command am_addr_t AMPacket.destination(message_t* amsg) {

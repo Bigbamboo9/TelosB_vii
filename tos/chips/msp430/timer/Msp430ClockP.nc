@@ -30,7 +30,10 @@
 #include "Msp430Timer.h"
 
 #define MSP430_CPU_SPEED 4194304UL
-#define DELTA            ((MSP430_CPU_SPEED) / (32768 / 8))
+#define DIVISION_FACTOR  (32768 / 4)
+// ACLK is division by 4
+#define DELTA            ((MSP430_CPU_SPEED) / (32768UL / 4UL))
+// #define DELTA            2048
 
 module Msp430ClockP @safe()
 {
@@ -261,11 +264,12 @@ implementation
       compare = CCR2 - oldcapture;           /* SMCLK difference */
 
       if(DELTA == compare) {
+        CCTL2 &= ~CCIFG;
         break;                               /* if equal, leave "while(1)" */
       } else if(DELTA < compare) {           /* DCO is too fast, slow it down */
         DCOCTL--;
         if(DCOCTL == 0xFF) {                 /* Did DCO role under? */
-	      BCSCTL1--;                         /* -> Select next lower RSEL */
+	  BCSCTL1--;                         /* -> Select next lower RSEL */
         }
       } else {
         DCOCTL++;

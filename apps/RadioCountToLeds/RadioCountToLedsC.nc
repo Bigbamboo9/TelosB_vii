@@ -55,6 +55,7 @@ module RadioCountToLedsC @safe() {
     interface StdControl as AMControl;
     interface Packet;
     interface LplxPacket;
+    interface PacketAcknowledgements as Acks;
   }
 }
 implementation {
@@ -74,6 +75,7 @@ implementation {
   }
  
   event void MilliTimer.fired() {
+    uint16_t dest_addr = 0x0;
     call Leds.led0Toggle();
     counter++;
     if (locked)
@@ -86,21 +88,19 @@ implementation {
       call LplxPacket.setPacketBulk(&packet, 1);
       rcm->counter = counter;
       rcm->time = call LocalTime.get();
-      if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(radio_count_msg_t)) == SUCCESS)
+      // if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(radio_count_msg_t)) == SUCCESS)
+      if (call AMSend.send(dest_addr, &packet, sizeof(radio_count_msg_t)) == SUCCESS)
         locked = TRUE;
     }
   }
 
   event message_t* Receive.receive(message_t* bufPtr, void* payload, uint8_t len) {
-    if (len != sizeof(radio_count_msg_t)) 
-      return bufPtr;
-    else {
       radio_count_msg_t* rcm = (radio_count_msg_t*)payload;
-      if (rcm->counter & 0x1) {
-	call Leds.led0On();
-      } else {
-	call Leds.led0Off();
-      }
+      // if (rcm->counter & 0x1) {
+	// call Leds.led0On();
+      // } else {
+	// call Leds.led0Off();
+      // }
       if (rcm->counter & 0x2) {
 	call Leds.led1On();
       } else {
@@ -112,12 +112,14 @@ implementation {
 	call Leds.led2Off();
       }
       return bufPtr;
-    }
   }
 
   event void AMSend.sendDone(message_t* bufPtr, error_t error) {
     if (&packet == bufPtr) {
       locked = FALSE;
+      if (call Acks.wasAcked(bufPtr)) {
+        call Leds.led2Toggle();
+      }
     }
   }
 }

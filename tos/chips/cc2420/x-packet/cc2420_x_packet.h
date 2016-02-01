@@ -41,11 +41,17 @@ static inline uint8_t get_packet_bulk(message_t* m) {
   return 0;
 }
 
+static inline void clear_packet_settings(message_t* m) {
+  uint8_t* p_ts = get_packet_setting(m);
+  memset(p_ts, 0, sizeof(rtx_setting_t));
+}
+
 static inline void set_packet_header(message_t* m, uint8_t dsn) {
   cc2420_header_t* p_header = (cc2420_header_t*)get_packet_header(m);
   rtx_setting_t* p_ts = (rtx_setting_t*)get_packet_setting(m);
 
-  p_header->fcf |= ( 1 << IEEE154_FCF_INTRAPAN )
+  p_header->fcf = ( 1 << IEEE154_FCF_INTRAPAN )
+                 | ( IEEE154_TYPE_DATA << IEEE154_FCF_FRAME_TYPE )
                  | ( IEEE154_ADDR_SHORT << IEEE154_FCF_DEST_ADDR_MODE )
                  | ( IEEE154_ADDR_SHORT << IEEE154_FCF_SRC_ADDR_MODE ) ;
   p_header->destpan = 0;
@@ -93,6 +99,13 @@ static inline void set_payload_length(message_t* m, uint8_t len) {
 
 static inline void set_tx_setting(message_t* m, rtx_setting_t* ts) {
   memcpy((uint8_t*)ts, get_packet_setting(m), sizeof(rtx_setting_t));
+}
+
+static inline void init_packet_metadata(message_t* m) {
+  cc2420_metadata_t* metadata = (cc2420_metadata_t*)get_packet_metadata(m);
+  metadata->ack = FALSE;
+  metadata->rssi = 0;
+  metadata->lqi = 0;
 }
 
 #endif

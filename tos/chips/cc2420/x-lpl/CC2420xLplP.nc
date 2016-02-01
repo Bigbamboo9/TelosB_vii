@@ -59,15 +59,20 @@ module CC2420xLplP {
   event void SleepTimer.fired() {
     if (lpl_status == LPL_X_IDLE) {
       atomic {
+        if (call SubReceive.rxOn() != SUCCESS) {
+          call SleepTimer.startOneShot(CC2420_LPL_PERIOD);
+          return; 
+        }
         lpl_status = LPL_X_RX;
         disable_other_interrupts(&ie_status);
         // keep the dco accurate!
         msp430_sync_dco();
         call SubReceive.rxInit();
         radio_start_time = rtimer_arch_now_dco();
-        cc2420_rx_start();
+        // restart the radio from idle to rx mode, avoid the early comming SFD
+        call SubReceive.rxEnable();
+        call SubReceive.txDetect();
       }
-      call SubReceive.rxOn();
     }
   }
 
@@ -85,7 +90,8 @@ module CC2420xLplP {
       // keep the dco accurate!
       msp430_sync_dco();
       call SubReceive.rxInit();
-      cc2420_rx_start();
+      // start the radio at low-layer to reduce the change of early comming SFD
+      // cc2420_rx_start();
     }
     return (call SubSend.send(msg, &tx_status)) ;
   }
@@ -151,7 +157,7 @@ module CC2420xLplP {
     }
   }
 
-  event void SubSend.sendDone(message_t* msg, rtx_setting_t* ts, error_t error) {
+  async event void SubSend.sendDone(message_t* msg, rtx_setting_t* ts, error_t error) {
     // TODO: deal with the transmited data packets
     if (lpl_status != LPL_X_TX)
       return;
@@ -167,7 +173,7 @@ module CC2420xLplP {
     }
   }
 
-  event void SubReceive.receive(message_t* msg, uint8_t size) {
+  async event void SubReceive.receive(message_t* msg, uint8_t size) {
     // TODO: deal with the received data packets
     // it is possible to receive data during data transmission
     uint8_t i;
@@ -180,9 +186,10 @@ module CC2420xLplP {
     for (i=0; i<size; i++) {
       signal Receive.receive(msg+i, get_packet_payload(msg+i), SUCCESS);
     }
+    call SubReceive.rxBuffSet();
   }
 
-  event void LplTime.timeRadio(rtx_time_compensation_t* rtx_time) {
+  async event void LplTime.timeRadio(rtx_time_compensation_t* rtx_time) {
     if (lpl_status == LPL_X_IDLE)
       return;
     atomic {
@@ -205,7 +212,7 @@ module CC2420xLplP {
     }
   }
 
-  event void LplTime.timeCompensated(uint16_t time, rtx_time_compensation_t* rtx_time) {
+  async event void LplTime.timeCompensated(uint16_t time, rtx_time_compensation_t* rtx_time) {
     if (lpl_status == LPL_X_IDLE)
         return;
     atomic {

@@ -15,7 +15,7 @@
 #endif
 
 #ifndef CC2420_X_DEF_CHANNEL
-#define CC2420_X_DEF_CHANNEL 26
+#define CC2420_X_DEF_CHANNEL 15
 #endif
 
 

@@ -37,7 +37,7 @@ void cc2420_spi_init() {
 static inline void fast_read_one(uint8_t* buf) {
   uint8_t tmp;
 
-  // CC2420_SPI_DISABLE();
+  CC2420_SPI_DISABLE();
   CC2420_SPI_ENABLE();
 
   U0TXBUF = CC2420_RXFIFO | 0x40;
@@ -75,6 +75,7 @@ static inline void fast_read_any(uint8_t* buf, uint8_t len) {
   uint8_t idx;
   uint8_t tmp;
 
+  CC2420_SPI_DISABLE();
   CC2420_SPI_ENABLE();
 
   U0TXBUF = CC2420_RXFIFO | 0x40;
@@ -95,7 +96,7 @@ static inline void fast_write_any(uint8_t* buf, uint8_t len) {
   uint8_t idx;
   uint8_t tmp;
 
-  // CC2420_SPI_DISABLE();
+  CC2420_SPI_DISABLE();
   CC2420_SPI_ENABLE();
 
   U0TXBUF = CC2420_TXFIFO;
@@ -116,7 +117,7 @@ static inline void fast_write_any(uint8_t* buf, uint8_t len) {
 static inline uint8_t strobe(uint8_t reg) {
   uint8_t tmp;
 
-  // CC2420_SPI_DISABLE();
+  CC2420_SPI_DISABLE();
   CC2420_SPI_ENABLE();
 
   U0TXBUF = reg;
@@ -132,6 +133,7 @@ static inline uint16_t get_register(uint8_t reg) {
   uint8_t tmp;
   uint16_t val;
 
+  CC2420_SPI_DISABLE();
   CC2420_SPI_ENABLE();
 
   U0TXBUF = (reg | 0x40);
@@ -154,7 +156,7 @@ static inline uint16_t get_register(uint8_t reg) {
 static inline void set_register(uint8_t reg, uint16_t val) {
   uint8_t tmp;
 
-  // CC2420_SPI_DISABLE();
+  CC2420_SPI_DISABLE();
   CC2420_SPI_ENABLE();
 
   U0TXBUF = reg;
@@ -176,7 +178,7 @@ static inline void read_ram(uint16_t addr, uint16_t offset, uint8_t* data, uint8
   uint8_t idx;
   uint8_t tmp;
 
-  // CC2420_SPI_DISABLE();
+  CC2420_SPI_DISABLE();
   CC2420_SPI_ENABLE();
 
   addr += offset;
@@ -202,7 +204,7 @@ static inline void write_ram(uint16_t addr, uint16_t offset, uint8_t* data, uint
   uint8_t idx;
   uint8_t tmp;
 
-  // CC2420_SPI_DISABLE();
+  CC2420_SPI_DISABLE();
   CC2420_SPI_ENABLE();
 
   addr += offset;
