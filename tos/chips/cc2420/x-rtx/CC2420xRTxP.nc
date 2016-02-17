@@ -210,7 +210,8 @@ module CC2420xRTxP {
     // the delta ticks for TB1 campature interrupt
     uint16_t TB1_irq = ( (rtimer_arch_now_dco() - TBCCR1) - 37 ) << 1;
     // the delta ticks for TB2 (ACK) compare interrupt
-    uint16_t TB2_irq = ( (rtimer_arch_now_dco() - TBCCR2) - 58 ) << 1;
+    // uint16_t TB2_irq = ( (rtimer_arch_now_dco() - TBCCR2) - 58 ) << 1;
+    uint16_t TB2_irq = ( (rtimer_arch_now_dco() - TBCCR2) - 53 ) << 1;
     uint8_t debug;
     tbiv = TBIV;
     tb1_buffer = TBCCR1;
@@ -370,7 +371,7 @@ module CC2420xRTxP {
           // TODO: exception handler
           // ignore the CI
           if (p_tx_buf != NULL && tx_setting->priority) {
-            rtx_status = S_TX_SFD;
+            rtx_status = S_TX_DETECT;
             atomic {
               // cc2420_rx_start();
               cc2420_signal_detect(TBCCR1);
@@ -388,7 +389,7 @@ module CC2420xRTxP {
               atomic { cc2420_signal_detect(TBCCR1); }
             }
           } else if (p_tx_buf != NULL) {
-            rtx_status = S_TX_SFD;
+            rtx_status = S_TX_DETECT;
             atomic {
               // cc2420_rx_start();
               cc2420_signal_detect(TBCCR1);
@@ -614,7 +615,7 @@ module CC2420xRTxP {
         ack_duration = TBCCR1;
         
         TBCCTL2 &= ~(CCIE | CCIFG);
-      
+ 
         // turn on SFD abortion timer
         TBCCR3 = TBCCR1 + ( ACK_LENGTH * 32 + 200 ) * 4;
         abortion_duration = TBCCR1;
@@ -740,7 +741,7 @@ module CC2420xRTxP {
                   tx_counter = 0;
                 } else {
                   radio_flush_tx();
-                  rtx_status = S_RX_DETECT;
+                  rtx_status = S_TX_DETECT;
                   // TBCCR5 = TBCCR2 + LISTENING_TAIL;
                   TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
                   detect_duration = TBCCR2;
@@ -784,7 +785,7 @@ module CC2420xRTxP {
                   tx_counter = 0;
                 } else {
                   radio_flush_tx();
-                  rtx_status = S_RX_DETECT;
+                  rtx_status = S_TX_DETECT;
                   // TBCCR5 = TBCCR2 + LISTENING_TAIL;
                   TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
                   detect_duration = TBCCR2;
@@ -792,7 +793,9 @@ module CC2420xRTxP {
                 }
               } else {
                 radio_flush_tx();
+                printf_u16(1, &TB2_irq);
                 rtx_status = S_TX_DETECT;
+                tx_counter = 0;
                 atomic {
                   // cc2420_rx_start();
                   cc2420_signal_detect(TBCCR2);
@@ -839,10 +842,18 @@ module CC2420xRTxP {
            debug = 10;
            printf_u8(1, &debug);
         #endif
+        // disable timer first
+          TBCCTL5 &= ~(CCIE | CCIFG);
+        // data frame is pending
+          if ( (tx_setting->size != 0) && (rtx_status == S_TX_DETECT) ) {  
+            rtx_status = S_TX_SFD;
+            cc2420_strobe_tx();
+            cc2420_load_tx();
+            return;
+          }
           TBCCTL1 &= ~(CCIE | CCIFG);
           TBCCTL2 &= ~(CCIE | CCIFG);
           TBCCTL3 &= ~(CCIE | CCIFG);
-          TBCCTL5 &= ~(CCIE | CCIFG);
           radio_flush_rx();
         // no packet in channel is detected
           detect_duration = TBCCR5 - detect_duration;
@@ -912,6 +923,11 @@ module CC2420xRTxP {
         return;
       }
       if ( rtx_status == S_RX_DETECT ) {
+/*
+        TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
+        TBCCTL5 = CCIE;
+        return;
+*/
         //TODO: signal LPL layer to sleep
         detect_duration = rtimer_arch_now_dco() - detect_duration;
         rtx_time.channel_detection += detect_duration;
@@ -1228,7 +1244,8 @@ module CC2420xRTxP {
           tx_counter++;
         } else {
           radio_flush_tx();
-          rtx_status = S_RX_DETECT;
+          rtx_status = S_TX_DETECT;
+          printf_u8(1, &type);
           // TBCCR5 = TBCCR1 + LISTENING_TAIL;
           TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
           detect_duration = TBCCR1;
@@ -1239,7 +1256,7 @@ module CC2420xRTxP {
         if (tx_counter == PREAMBLE_PACKET_LENGTH) {
           tx_setting->size--;
           if (tx_setting->size != 0) {
-            rtx_status = S_TX_SFD;
+            rtx_status = S_TX_DETECT;
             tx_counter = 0;
             p_tx_buf = (message_t*)((uint8_t*)p_tx_buf + sizeof(message_t));
             atomic {
@@ -1333,6 +1350,7 @@ module CC2420xRTxP {
           }
         } else {
           rtx_status = S_TX_DETECT;
+          tx_counter = 0;
           atomic {
             // cc2420_rx_start();
             cc2420_signal_detect(TBCCR1);

@@ -27,7 +27,8 @@
 // #define LISTENING_TAIL         2048
 #define LISTENING_TAIL         22222
 /** Radio keep awake only when the number of rssi samples that are 3dBm larger than the noisefloor is larger than this threshold **/
-#define RSSI_UP_THRESHOLD      7
+// #define RSSI_UP_THRESHOLD      7
+#define RSSI_UP_THRESHOLD      3
 /** Rssi PAPR threshold **/
 #define RSSI_PAPR_THRESHOLD    6
 /** CI Hop threshold **/

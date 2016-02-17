@@ -43,6 +43,8 @@
  * @author Cory Sharp <cssharp@eecs.berkeley.edu>
  */
 
+#include "serial_fast_print.h"
+
 generic module VirtualizeTimerC(typedef precision_tag, int max_timers) @safe()
 {
   provides interface Timer<precision_tag> as Timer[uint8_t num];
@@ -109,7 +111,12 @@ implementation
     bool min_remaining_isset = FALSE;
     uint16_t num;
 
+    uint16_t debug_u16;
+
     call TimerFrom.stop();
+
+    // debug_u16 = now;
+    // printf_u16(1, &debug_u16);
 
     for (num=0; num<NUM_TIMERS; num++)
     {
@@ -160,7 +167,10 @@ implementation
 
   command void Timer.startOneShot[uint8_t num](uint32_t dt)
   {
+    // uint16_t debug_time;
+    // debug_time = call TimerFrom.getNow();
     startTimer(num, call TimerFrom.getNow(), dt, TRUE);
+    // printf_u16(1, &debug_time);
   }
 
   command void Timer.stop[uint8_t num]()
@@ -201,6 +211,9 @@ implementation
   command uint32_t Timer.getdt[uint8_t num]()
   {
     return m_timers[num].dt;
+  }
+
+  event void RadioTimerUpdate.startRadioTime() {
   }
 
   event void RadioTimerUpdate.triggerUpdate() {

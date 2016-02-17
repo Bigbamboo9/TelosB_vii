@@ -76,7 +76,7 @@ implementation {
  
   event void MilliTimer.fired() {
     uint16_t dest_addr = 0x0;
-    call Leds.led0Toggle();
+    // call Leds.led2Toggle();
     counter++;
     if (locked)
       return;
@@ -96,11 +96,11 @@ implementation {
 
   event message_t* Receive.receive(message_t* bufPtr, void* payload, uint8_t len) {
       radio_count_msg_t* rcm = (radio_count_msg_t*)payload;
-      // if (rcm->counter & 0x1) {
-	// call Leds.led0On();
-      // } else {
-	// call Leds.led0Off();
-      // }
+      if (rcm->counter & 0x1) {
+	call Leds.led0On();
+      } else {
+	call Leds.led0Off();
+      }
       if (rcm->counter & 0x2) {
 	call Leds.led1On();
       } else {
@@ -118,7 +118,7 @@ implementation {
     if (&packet == bufPtr) {
       locked = FALSE;
       if (call Acks.wasAcked(bufPtr)) {
-        call Leds.led2Toggle();
+        call Leds.led0Toggle();
       }
     }
   }

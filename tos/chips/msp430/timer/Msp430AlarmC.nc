@@ -29,6 +29,8 @@
  *          intended use.
  */
 
+#include "serial_fast_print.h"
+
 generic module Msp430AlarmC(typedef frequency_tag) @safe()
 {
   provides interface Init;
@@ -88,6 +90,9 @@ implementation
       }
       call Msp430TimerControl.clearPendingInterrupt();
       call Msp430TimerControl.enableEvents();
+    // printf_u16(1, &t0);
+    // printf_u16(1, &now);
+    // printf_u16(1, &dt);
     }
   }
 

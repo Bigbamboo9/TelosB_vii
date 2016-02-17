@@ -39,5 +39,8 @@ implementation
   Counter = Transform.Counter;
 
   Transform.CounterFrom -> CounterFrom;
+
+  components CC2420xLplC;
+  Transform.RadioTimerUpdate -> CC2420xLplC;
 }
 

@@ -4,6 +4,9 @@ import net.tinyos.packet.*;
 import java.io.*;
 import java.util.*;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class FastPrintf {
 	public static void main(String args[]) throws IOException {
 		String source = null;
@@ -33,10 +36,19 @@ public class FastPrintf {
 				int word;
 				short value;
 				if (b == 0x22 && !u8_print) {
+					SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SSS");
+					String ts = dateFormat.format(new Date());
+					System.out.print(ts+": ");
 					u8_print = true;
 				}else if (b == 0x77 && !u16_print) {
+					SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SSS");
+					String ts = dateFormat.format(new Date());
+					System.out.print(ts+": ");
 					u16_print = true;
 				}else if (b == 0x44 && !int_print) {
+					SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss:SSS");
+					String ts = dateFormat.format(new Date());
+					System.out.print(ts+": ");
 					int_print = true;
                                 }else if (u8_print && u8_len == 0) {
 					u8_len = b;

@@ -24,6 +24,7 @@ module CC2420xLplP {
   lpl_x_state_t lpl_status;
   interrupt_status_t ie_status;
   rtx_setting_t tx_status;
+  bool bulk_or_not;
   uint8_t lpl_dsn;
   uint32_t radio_time_perround;
   uint32_t radio_start_time;
@@ -65,10 +66,11 @@ module CC2420xLplP {
         }
         lpl_status = LPL_X_RX;
         disable_other_interrupts(&ie_status);
+        signal RadioTimerUpdate.startRadioTime();
         // keep the dco accurate!
         msp430_sync_dco();
         call SubReceive.rxInit();
-        radio_start_time = rtimer_arch_now_dco();
+        // radio_start_time = rtimer_arch_now_dco();
         // restart the radio from idle to rx mode, avoid the early comming SFD
         call SubReceive.rxEnable();
         call SubReceive.txDetect();
@@ -83,10 +85,13 @@ module CC2420xLplP {
     call SleepTimer.stop();
     atomic {
       lpl_status = LPL_X_TX;
+      bulk_or_not = FALSE;
       set_packet_header(msg, lpl_dsn);
       set_payload_length(msg, len);
+      init_packet_metadata(msg);
       set_tx_setting(msg, &tx_status);
       disable_other_interrupts(&ie_status);
+      signal RadioTimerUpdate.startRadioTime();
       // keep the dco accurate!
       msp430_sync_dco();
       call SubReceive.rxInit();
@@ -131,9 +136,11 @@ module CC2420xLplP {
       rtx_setting_t* p_ts = (rtx_setting_t*)get_packet_setting(msg);
       uint8_t size = p_ts->size;
       lpl_status = LPL_X_TX;
+      bulk_or_not = TRUE;
       for (i = 0; i < size; i++) {
         set_packet_header(msg+i, lpl_dsn);
         set_payload_length(msg+i, len);
+        init_packet_metadata(msg+i);
         lpl_dsn++;
       }
       set_tx_setting(msg, &tx_status);
@@ -166,7 +173,8 @@ module CC2420xLplP {
       lpl_dsn++;
     }
     // signal up-layer sendDone
-    if (ts->size == 1) {
+    // if (ts->size == 1) {
+    if (!bulk_or_not) {
       signal Send.sendDone(msg, error);
     } else {
       signal BulkSend.sendDone(msg, error);
@@ -205,9 +213,9 @@ module CC2420xLplP {
       rtx_time->turnaround_total_time += rtx_time->pkt_turnaround * rtx_time->turnaround_time;
 
       print_high = rtx_time->channel_detection >> 16;
-      printf_u16(1, &print_high);
+      // printf_u16(1, &print_high);
       print_low = rtx_time->channel_detection & 0xFFFF;
-      printf_u16(1, &print_low);
+      // printf_u16(1, &print_low);
 
     }
   }
@@ -218,6 +226,7 @@ module CC2420xLplP {
     atomic {
       // TODO: compensate the frozen timer
       signal RadioTimerUpdate.counterUpdate(radio_time_perround+time+radio_start_time, rtx_time->calibration_factor);
+      // signal RadioTimerUpdate.counterUpdate(radio_time_perround+time, rtx_time->calibration_factor);
       signal RadioTimerUpdate.triggerUpdate();
       // restart the channel timer after RTx
       call SleepTimer.startOneShot(CC2420_LPL_PERIOD);
@@ -226,6 +235,7 @@ module CC2420xLplP {
     }
   }
 
+  default event void RadioTimerUpdate.startRadioTime() {}
   default event void RadioTimerUpdate.triggerUpdate() {}
   default event void RadioTimerUpdate.counterUpdate(uint32_t count, uint16_t factor) {}
 }

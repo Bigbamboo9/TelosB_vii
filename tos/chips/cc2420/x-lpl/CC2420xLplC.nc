@@ -5,6 +5,7 @@ configuration CC2420xLplC {
   provides interface Receive;
   provides interface Receive as Snoop;
   provides interface OppoRouting;
+
   provides interface RadioTimerUpdate;
 } implementation {
   components MainC;

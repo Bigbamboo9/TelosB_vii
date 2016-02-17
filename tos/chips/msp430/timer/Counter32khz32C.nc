@@ -36,8 +36,11 @@ implementation
   components Msp430Counter32khzC as CounterFrom;
   components new TransformCounterC(T32khz,uint32_t,T32khz,uint16_t,0,uint16_t,FALSE) as Transform;
 
+  // components CC2420xLplC;
+
   Counter = Transform;
 
   Transform.CounterFrom -> CounterFrom;
+  // Transform.RadioTimerUpdate -> CC2420xLplC;
 }
 

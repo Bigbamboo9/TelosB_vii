@@ -51,6 +51,8 @@
  * @author Cory Sharp <cssharp@eecs.berkeley.edu>
  */
 
+#include "serial_fast_print.h"
+
 generic module TransformCounterC(
   typedef to_precision_tag,
   typedef to_size_type @integer(),
@@ -67,6 +69,7 @@ generic module TransformCounterC(
 implementation
 {
   upper_count_type m_upper;
+  from_size_type current_counter;
 
   enum
   {
@@ -142,19 +145,41 @@ implementation
     }
   }
 
+  event void RadioTimerUpdate.startRadioTime() {
+  atomic{
+    if (!isdco && (bit_shift_right == 5)) {
+      // uint16_t debug_int16;
+      current_counter = call CounterFrom.get();
+      // debug_int16 = current_counter;
+      // printf_u16(1, &debug_int16);
+    }
+  }
+  }
+
   // count is in SMCLK ticks
   event void RadioTimerUpdate.counterUpdate(uint32_t count, uint16_t factor) {
     atomic {
-      if (!isdco) {
-        // factor is approximate 128
-        upper_count_type add_new = (count >> 7) >> (8 * sizeof(from_size_type));
-        upper_count_type i;
+      // only for 32KHz 16 to TMilli 32
+      if (!isdco && (bit_shift_right == 5)) {
+        // factor is approximate 128, add 1 tick as the guard time
+        // upper_count_type add_new = (count >> 7) >> (8 * sizeof(from_size_type));
+        // upper_count_type add_new = (count >> 7) + current_counter + 1;
+        uint32_t add_new = (count >> 7) + current_counter;
+        uint8_t i;
+        add_new = add_new >> 16;
         for (i = 0; i < add_new; i++) {
           m_upper++;
           if ((m_upper & OVERFLOW_MASK) == 0)
             signal Counter.overflow();
         }
-      } else {
+
+        {
+          uint16_t debug_u16 = add_new;
+          printf_u16(1, &debug_u16);
+        }
+
+      }
+/* else {
         upper_count_type add_new = count >> (8 * sizeof(from_size_type));
         upper_count_type i;
         for (i = 0; i < add_new; i++) {
@@ -163,6 +188,7 @@ implementation
             signal Counter.overflow();
         }
       }
+*/
     }
   }
   
