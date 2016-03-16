@@ -108,4 +108,30 @@ static inline void init_packet_metadata(message_t* m) {
   metadata->lqi = 0;
 }
 
+static inline void set_packet_header_crc(message_t* m) {
+  uint8_t* p_byte = get_packet_header(m);
+  rtx_setting_t* p_rtx_setting = (rtx_setting_t*)get_packet_setting(m);
+  uint8_t i;
+  uint8_t crc_header_size = CC2420_X_HEADER_LENGTH - 4; // aggregate - 1 - 3;
+  uint16_t crc = 0xFFFF;
+  // avoid the length value included in cc2420 header stucture
+  for (i = 1; i <= crc_header_size; i++) {
+     uint8_t tmp_val = *(p_byte + i);
+     uint8_t j;
+     // printf_u8(1, &tmp_val);
+     crc = crc ^ (tmp_val << 8);
+     for (j = 0; j < 8; j++) {
+       if (crc & 0x8000)
+         crc = (crc << 1) ^ CRC_POLY;
+       else
+         crc <<= 1;
+     }
+     crc &= 0xFFFF;
+  }
+  crc ^= 0x0000;
+  p_rtx_setting->crc = crc;
+
+  // printf_u16(1, &crc);
+}
+
 #endif

@@ -69,7 +69,8 @@ generic module TransformCounterC(
 implementation
 {
   upper_count_type m_upper;
-  from_size_type current_counter;
+  uint16_t current_counter;
+  uint32_t radio_on_time;
 
   enum
   {
@@ -148,10 +149,15 @@ implementation
   event void RadioTimerUpdate.startRadioTime() {
   atomic{
     if (!isdco && (bit_shift_right == 5)) {
-      // uint16_t debug_int16;
+      uint32_t high = m_upper;
+      uint32_t low;
+
+      if (call CounterFrom.isOverflowPending()) {
+        high++;
+      }
       current_counter = call CounterFrom.get();
-      // debug_int16 = current_counter;
-      // printf_u16(1, &debug_int16);
+      low = current_counter;
+      radio_on_time = (high << HIGH_SHIFT_LEFT) | (low >> LOW_SHIFT_RIGHT);
     }
   }
   }
@@ -172,12 +178,12 @@ implementation
           if ((m_upper & OVERFLOW_MASK) == 0)
             signal Counter.overflow();
         }
-
+/*
         {
           uint16_t debug_u16 = add_new;
           printf_u16(1, &debug_u16);
         }
-
+*/
       }
 /* else {
         upper_count_type add_new = count >> (8 * sizeof(from_size_type));
@@ -192,6 +198,29 @@ implementation
     }
   }
   
-  event void RadioTimerUpdate.triggerUpdate() { }
+  event void RadioTimerUpdate.triggerUpdate() {
+  atomic {
+    uint32_t high;
+    uint32_t low;
+    uint32_t current_time;
+
+    high = m_upper;
+    // checke whether the compenstation miss any overflow, should not count any pending overflow
+/*
+    if (call CounterFrom.isOverflowPending()) {
+      high++;
+    }
+*/
+    low = call CounterFrom.get();
+
+    current_time = (high << HIGH_SHIFT_LEFT) | (low >> LOW_SHIFT_RIGHT);
+
+    if (current_time < radio_on_time) {
+      m_upper++;
+      if ((m_upper & OVERFLOW_MASK) == 0)
+        signal Counter.overflow();
+    }
+  }
+  }
 }
 

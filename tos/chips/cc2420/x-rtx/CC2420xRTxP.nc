@@ -97,6 +97,8 @@ module CC2420xRTxP {
   static inline void cc2420_ack_rx();
   /** dealing with the timing exception after ack receiving **/
   static inline void cc2420_ack_rx_except();
+  /** calculate the header crc byte by byte **/
+  // static inline uint16_t cc2420_header_crc(uint8_t byte, uint16_t crc);
 
   command error_t Init.init() {
     rtx_status = S_RTX_IDLE;
@@ -122,6 +124,7 @@ module CC2420xRTxP {
     rtx_time.radio_on_time = 0;
     rtx_time.tail_total_time = 0;
     continuous_duplicate = 0;
+    local_metric = 0;
     return SUCCESS;
   }
 
@@ -208,17 +211,19 @@ module CC2420xRTxP {
 
   TOSH_SIGNAL(TIMERB1_VECTOR) {
     // the delta ticks for TB1 campature interrupt
-    uint16_t TB1_irq = ( (rtimer_arch_now_dco() - TBCCR1) - 37 ) << 1;
+    uint16_t TB1_irq = ( (rtimer_arch_now_dco() - TBCCR1) - 38 ) << 1;
     // the delta ticks for TB2 (ACK) compare interrupt
-    // uint16_t TB2_irq = ( (rtimer_arch_now_dco() - TBCCR2) - 58 ) << 1;
-    uint16_t TB2_irq = ( (rtimer_arch_now_dco() - TBCCR2) - 53 ) << 1;
+    uint16_t TB2_irq = ( (rtimer_arch_now_dco() - TBCCR2) - 57 ) << 1;
+    // uint16_t TB2_irq = ( (rtimer_arch_now_dco() - TBCCR2) - 53 ) << 1;
     uint8_t debug;
     tbiv = TBIV;
-    tb1_buffer = TBCCR1;
+    TBCCTL1 = CAP;
+    // tb1_buffer = TBCCR1;
 #ifdef RADIO_X_DEBUG
     // printf_u16(1, &tbiv);
 #endif
     if (tbiv == 2) {
+      // printf_u16(1, &TB1_irq);
 #ifdef RADIO_X_DEBUG
       // printf_u16(1, &TB1_irq);
       // debug = 2;
@@ -232,13 +237,17 @@ module CC2420xRTxP {
 #endif
         /** ack has been received **/
         ack_duration = TBCCR1 - ack_duration;
+        printf_u16(1, &ack_duration);
         detect_duration = TBCCR1;
         // compensate the if-else jump for RX_ACK
         if ( rtx_status == S_RX_ACK && (!(P4IN & (1 << 1))));
         // turn off the SFD abortion timer
         TBCCTL3 &= ~(CCIE | CCIFG);
-        // set interrupt edge
-        TBCCTL1 = CM_1 | CAP | SCS | CCIE;
+        // set interrupt edge, but the new setting of interrupt edge should follow the specific event to avoid the interrupt mistatke
+        // need clear the capture edge setting instead of only clear the CCIFG
+        // TBCCTL1 = CM_1 | CAP | SCS | CCIE;
+        // TBCCTL1 &= ~(CCIE | CCIFG);
+        TBCCTL1 = CAP;
 
         if (TB1_irq <= 8) {
           // compensate the interrupt handling delay
@@ -274,12 +283,15 @@ module CC2420xRTxP {
 #endif
         /** ack has been sent **/
         ack_duration = TBCCR1 - ack_duration;
+        printf_u16(1, &ack_duration);
         detect_duration = TBCCR1;
         
         // turn off the SFD abortion timer
         TBCCTL3 &= ~(CCIE | CCIFG);
         // set interrupt edge
-        TBCCTL1 = CM_1 | CAP | SCS | CCIE;
+        // TBCCTL1 = CM_1 | CAP | SCS | CCIE;
+        // TBCCTL1 &= ~(CCIE | CCIFG);
+        TBCCTL1 = CAP;
 
         // time_interval = rtimer_arch_now_dco() - time_interval;
         // printf_u16(1, &time_interval);
@@ -304,7 +316,7 @@ module CC2420xRTxP {
 
           cc2420_strobe_tx();
 
-          if (p_tx_buf != NULL && tx_setting->priority) {
+          if ( (tx_setting->size != 0) && (p_tx_buf != NULL) && tx_setting->priority) {
             // current transmission hold the high priority, transmit with ci
             rtx_status = S_TX_SFD;
             cc2420_load_tx();
@@ -315,7 +327,7 @@ module CC2420xRTxP {
               rtx_status = S_CI_SFD;
               if (p_tx_buf == NULL) {
                 p_tx_buf = m_rx_buf.p_rx_buf;
-              } else {
+              } else if (tx_setting->size != 0) {
                 // save the p_tx_buf first
                 swap_tx_buf = p_tx_buf;
                 p_tx_buf = m_rx_buf.p_rx_buf;
@@ -325,6 +337,8 @@ module CC2420xRTxP {
             } else if (rx_setting->batched) {
               // some packets will be comming soon
               radio_flush_tx();
+              while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
+              radio_flush_tx();
               rtx_status = S_RX_DETECT;
               // TBCCR5 = TBCCR1 + LISTENING_TAIL;
               TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
@@ -332,18 +346,22 @@ module CC2420xRTxP {
               TBCCTL5 = CCIE;
             } else {
               radio_flush_tx();
+              while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
+              radio_flush_tx();
               rtx_status = S_RX_DETECT;
               atomic {
                 // cc2420_rx_start(); 
                 cc2420_signal_detect(TBCCR1);
               } 
             }
-          } else if (p_tx_buf != NULL) {
+          } else if ( (tx_setting->size != 0) && (p_tx_buf != NULL) ) {
             // nothing will be received further, start to transmit
             rtx_status = S_TX_SFD;
             cc2420_load_tx();
           } else if (m_rx_buf.occ_size == m_rx_buf.max_size) {
             // no buffer left, turn off the radio process
+            radio_flush_tx();
+            while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
             radio_flush_tx();
             TBCCTL1 = CAP;
             rtx_time.pkt_ack++;
@@ -361,6 +379,10 @@ module CC2420xRTxP {
           } else {
             //nothing will be received and transmited, start channel checking
             radio_flush_tx();
+            while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
+            radio_flush_tx();
+            // enable rising edge interrupt capture to receive
+            TBCCTL1 = CM_1 | CAP | SCS | CCIE;
             rtx_status = S_RX_DETECT;
             // TBCCR5 = TBCCR1 + LISTENING_TAIL;
             TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
@@ -370,7 +392,9 @@ module CC2420xRTxP {
         } else {
           // TODO: exception handler
           // ignore the CI
-          if (p_tx_buf != NULL && tx_setting->priority) {
+          if ( (tx_setting->size != 0) && (p_tx_buf != NULL) && tx_setting->priority) {
+            // enable rising edge interrupt capture to receive
+            TBCCTL1 = CM_1 | CAP | SCS | CCIE;
             rtx_status = S_TX_DETECT;
             atomic {
               // cc2420_rx_start();
@@ -378,6 +402,8 @@ module CC2420xRTxP {
             }
           } else if ((m_rx_buf.received) && (m_rx_buf.occ_size != m_rx_buf.max_size)) {
             if (rx_setting->batched) {
+              // enable rising edge interrupt capture to receive
+              TBCCTL1 = CM_1 | CAP | SCS | CCIE;
               rtx_status = S_RX_DETECT;
               // TBCCR5 = TBCCR1 + LISTENING_TAIL;
               TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
@@ -385,10 +411,16 @@ module CC2420xRTxP {
               TBCCTL5 = CCIE;
             } else {
               radio_flush_tx();
+              while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
+              radio_flush_tx();
+              // enable rising edge interrupt capture to receive
+              TBCCTL1 = CM_1 | CAP | SCS | CCIE;
               rtx_status = S_RX_DETECT;
               atomic { cc2420_signal_detect(TBCCR1); }
             }
-          } else if (p_tx_buf != NULL) {
+          } else if ( (tx_setting->size != 0) && (p_tx_buf != NULL) ) {
+            // enable rising edge interrupt capture to receive
+            TBCCTL1 = CM_1 | CAP | SCS | CCIE;
             rtx_status = S_TX_DETECT;
             atomic {
               // cc2420_rx_start();
@@ -409,6 +441,8 @@ module CC2420xRTxP {
             signal LplTime.timeCompensated(rtimer_arch_now_dco() - TBCCR1, &rtx_time);
             return;
           } else {
+            // enable rising edge interrupt capture to receive
+            TBCCTL1 = CM_1 | CAP | SCS | CCIE;
             rtx_status = S_RX_DETECT;
             // TBCCR5 = TBCCR1 + LISTENING_TAIL;
             TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
@@ -430,11 +464,15 @@ module CC2420xRTxP {
         /** data packet has been received, wether transmit with CI and ack the packet **/
         // turn off receive execption timer
         rx_duration = TBCCR1 - rx_duration;
-        TBCCTL3 &= ~(CCIE | CCIFG);
+        // printf_u16(1, &rx_duration);
         detect_duration = TBCCR1;
+        TBCCTL3 &= ~(CCIE | CCIFG);
+        // detect_duration = TBCCR1;
         if ( (rtx_status== S_TX_SFD) && (!(P4IN & (1 << 1))) );
         // set interrupt edge
-        TBCCTL1 = CM_1 | CAP | SCS | CCIE;
+        // TBCCTL1 &= ~(CCIE | CCIFG);
+        TBCCTL1 = CAP;
+        // TBCCTL1 = CM_1 | CAP | SCS | CCIE;
         // TBCCTL1 = CM_2 | CAP | SCS | CCIE;
  
         if (TB1_irq <= 8) {
@@ -466,6 +504,8 @@ module CC2420xRTxP {
           cc2420_expired_end_rx();
 
           // TBCCR5 = TBCCR1 + LISTENING_TAIL;
+          // enable rising edge interrupt to receive
+          TBCCTL1 = CM_1 | CAP | SCS | CCIE;
           TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
           detect_duration = TBCCR1;
           TBCCTL5 = CCIE;
@@ -488,11 +528,14 @@ module CC2420xRTxP {
 #endif
         /** packet transmission has finished **/
         tx_duration = TBCCR1 - tx_duration;
+        // printf_u16(1, &tx_duration);
         detect_duration = TBCCR1;
         // turn off SFD abortion timer
         TBCCTL3 &= ~(CCIE | CCIFG);
         // set interrupt edge
-        TBCCTL1 = CM_1 | CAP | SCS | CCIE;
+        // TBCCTL1 = CM_1 | CAP | SCS | CCIE;
+        // TBCCTL1 &= ~(CCIE | CCIFG);
+        TBCCTL1 = CAP;
 
         // time compensation need? I think the compensation is needed!
         if (TB1_irq <= 8) {
@@ -513,11 +556,24 @@ module CC2420xRTxP {
           asm volatile ("nop");
           asm volatile ("nop");
 
-          cc2420_ack_wait_tx();
+          // cc2420_ack_wait_tx();
+          // manually inline
+          detect_duration = rtimer_arch_now_dco() - detect_duration;
+          turn_around = rtimer_arch_now_dco();
+          // turn_around = TBCCR1;
+          // printf_u16(1, &detect_duration);
+          TBCCTL1 = CM_1 | CAP | SCS | CCIE;
+          TBCCR2 = rtimer_arch_now_dco() + rtx_time.turnaround_time + rtx_time.ack_time;
+          TBCCTL2 = CCIE;
+          rtx_time.channel_detection += detect_duration;
           rtx_status = S_TX_ACK;
         } else {
           // TODO: detect again
           radio_flush_tx();
+          // while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
+          // radio_flush_tx();
+          // enable rising edge interrupt to capture RTX
+          TBCCTL1 = CM_1 | CAP | SCS | CCIE;
           rtx_status = S_TX_DETECT;
           atomic {
             // cc2420_rx_start();
@@ -537,7 +593,9 @@ module CC2420xRTxP {
         // turn off reception exception timer
         TBCCTL3 &= ~(CCIE | CCIFG);
 
-        TBCCTL1 = CM_1 | CAP | SCS | CCIE;
+        // TBCCTL1 = CM_1 | CAP | SCS | CCIE;
+        // TBCCTL1 &= ~(CCIE | CCIFG);
+        TBCCTL1 = CAP;
 
         // time compensation need? I think the compensation is needed!
         if (TB1_irq <= 8) {
@@ -558,15 +616,35 @@ module CC2420xRTxP {
           asm volatile ("nop");
           asm volatile ("nop");
 
-          cc2420_ack_wait_tx();
+          // cc2420_ack_wait_tx();
+          // manually inline
+          detect_duration = rtimer_arch_now_dco() - detect_duration;
+          turn_around = rtimer_arch_now_dco();
+          // printf_u16(1, &detect_duration);
+          TBCCTL1 = CM_1 | CAP | SCS | CCIE;
+          TBCCR2 = rtimer_arch_now_dco() + rtx_time.turnaround_time + rtx_time.ack_time;
+          TBCCTL2 = CCIE;
+          rtx_time.channel_detection += detect_duration;
           rtx_status = S_CI_ACK;
         } else {
           radio_flush_tx();
-          rtx_status = S_RX_DETECT;
-          // TBCCR5 = TBCCR1 + LISTENING_TAIL;
-          TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
-          detect_duration = TBCCR1;
-          TBCCTL5 = CCIE;
+          // while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
+          // radio_flush_tx();
+          // TODO : possible tx pointer swap
+          if ((tx_setting->size != 0) && (swap_tx_buf != NULL)) {
+            p_tx_buf = swap_tx_buf;
+            swap_tx_buf = NULL;
+            rtx_status = S_TX_DETECT;
+            TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
+            TBCCTL5 = CCIE;
+          } else {
+            TBCCTL1 = CM_1 | CAP | SCS | CCIE;
+            rtx_status = S_RX_DETECT;
+            // TBCCR5 = TBCCR1 + LISTENING_TAIL;
+            TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
+            // detect_duration = TBCCR1;
+            TBCCTL5 = CCIE;
+          }
         }
 
         rtx_time.pkt_send++;
@@ -613,28 +691,47 @@ module CC2420xRTxP {
         // turn off ack waiting timer
         turn_around = TBCCR1 - turn_around;
         ack_duration = TBCCR1;
-        
-        TBCCTL2 &= ~(CCIE | CCIFG);
- 
-        // turn on SFD abortion timer
-        TBCCR3 = TBCCR1 + ( ACK_LENGTH * 32 + 200 ) * 4;
-        abortion_duration = TBCCR1;
-        // TBCCTL3 &= ~CCIFG;
-        TBCCTL3 = CCIE;
 
-        TBCCTL1 = CM_2 | CAP | SCS | CCIE;
+        // printf_u16(1, &turn_around);
+
+        // make sure the received ack is a valid one.
+        if (turn_around < 1500 || turn_around > 1600) {
+          // something smell bad, flush RXFIFO and wait ack timer fire
+          radio_flush_rx();
+          // clear and reenable interrupt capture
+          // TBCCTL1 &= ~(CCIE | CCIFG);
+          TBCCTL1 = CM_1 | CAP | SCS | CCIE;
+        } else {
+        
+          TBCCTL2 &= ~(CCIE | CCIFG);
+ 
+          // turn on SFD abortion timer
+          TBCCR3 = TBCCR1 + ( ACK_LENGTH * 32 + 200 ) * 4;
+          abortion_duration = TBCCR1;
+          // TBCCTL3 &= ~CCIFG;
+          TBCCTL3 = CCIE;
+
+          TBCCTL1 = CM_2 | CAP | SCS | CCIE;
 
 #ifdef RADIO_X_DEBUG
+{
+        // uint16_t debug_ta = rtx_time.turnaround_time;
+        // uint16_t debug_ad = rtx_time.ack_time;
         // printf_u16(1, &turn_around);
+        // printf_u16(1, &debug_ta);
+        // printf_u16(1, &debug_ad);
+}
 #endif
 
-        turnaround_time_update(&rtx_time, turn_around);
-        rtx_time.pkt_turnaround++;
+          turnaround_time_update(&rtx_time, turn_around);
+          rtx_time.pkt_turnaround++;
+        }
       } else if ( rtx_status == S_CI_SFD && (P4IN & (1 << 1))) {
 #ifdef RADIO_X_DEBUG
         debug = 88;
         printf_u8(1, &debug);
 #endif
+        // TODO : turn_arround calc
         /** CI transmission start **/
         TBCCTL1 = CM_2 | CAP | SCS | CCIE;
 
@@ -649,6 +746,8 @@ module CC2420xRTxP {
         debug = 99;
         printf_u8(1, &debug);
 #endif
+        // turn_around = TBCCR1 - turn_around;
+        // printf_u16(1, &turn_around);
         /** packet transmission start **/
         tx_duration = TBCCR1;
         
@@ -663,6 +762,8 @@ module CC2420xRTxP {
       } else {
       // error status, abort current process
         radio_flush_tx();
+        // while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
+        // radio_flush_tx();
         radio_flush_rx();
         rtx_status = S_RX_DETECT;
         TBCCTL1 = CM_1 | CAP | SCS | CCIE;
@@ -676,6 +777,9 @@ module CC2420xRTxP {
         case 4:
           detect_duration = TBCCR2;
           TBCCTL2 &= ~(CCIE | CCIFG);
+          // TBCCTL1 &= ~(CCIE | CCIFG);
+          TBCCTL1 = CAP;
+          // printf_u16(1, &TB2_irq);
         #ifdef RADIO_X_DEBUG
           // printf_u16(1, &TB2_irq);
           debug = 4;
@@ -703,32 +807,46 @@ module CC2420xRTxP {
             /**
              * strobe TX when S_RX_ACK might hamper the radio to receive the SFD reception of new packet
              **/
-            // cc2420_strobe_tx();
+            cc2420_strobe_tx();
+            // enable interrupt capture
+            // TBCCTL1 = CM_1 | CAP | SCS | CCIE;
 
             if (rtx_status == S_RX_ACK) {
             // does not successful or need to ack the received data
-              if (p_tx_buf != NULL) {
+              if ( (tx_setting->size != 0) && (p_tx_buf != NULL) ) {
                 rtx_status = S_TX_SFD;
-                cc2420_strobe_tx();
+                // cc2420_strobe_tx();
                 cc2420_load_tx();
                 tx_counter = 0;
               } else {
-                // radio_flush_tx();
-                rtx_status = S_RX_DETECT;
+                radio_flush_tx();
+                while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
+                radio_flush_tx();
+                if (continuous_duplicate > DUPLICATE_COUNT) {
+                  // TBCCTL1 &= ~(CCIE | CCIFG); 
+                  TBCCTL1 = CAP;
+                  rtx_status = S_RTX_IDLE;
+                  // adding small tail to end the radio process
+                  TBCCR5 = rtimer_arch_now_dco() + 128;
+                  // detect_duration = TBCCR2;
+                  TBCCTL5 = CCIE;
+                } else {
+                  rtx_status = S_RX_DETECT;
                 //{
                 //  uint16_t debug_delay = rtimer_arch_now_dco();
                 //  debug_delay = debug_delay - TBCCR2;
                 //  printf_u16(1, &debug_delay);
                 //}
                 // TBCCR5 = TBCCR2 + LISTENING_TAIL;
-                TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
-                detect_duration = TBCCR2;
-                TBCCTL5 = CCIE;
+                  TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
+                  // detect_duration = TBCCR2;
+                  TBCCTL5 = CCIE;
+                }
               }
             } else if (rtx_status == S_TX_ACK) {
               // if (p_tx_buf != NULL) {
               rtx_status = S_TX_SFD;
-              cc2420_strobe_tx();
+              // cc2420_strobe_tx();
               // }
               tx_counter++;
               write_ram(CC2420_RAM_TXFIFO, sizeof(cc2420_header_t)+sizeof(rtx_setting_t), &tx_counter, 1);
@@ -740,6 +858,8 @@ module CC2420xRTxP {
                   cc2420_load_tx();
                   tx_counter = 0;
                 } else {
+                  radio_flush_tx();
+                  while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
                   radio_flush_tx();
                   rtx_status = S_TX_DETECT;
                   // TBCCR5 = TBCCR2 + LISTENING_TAIL;
@@ -751,18 +871,20 @@ module CC2420xRTxP {
             } else if (rtx_status == S_CI_ACK) {
               // if (p_tx_buf != NULL) {
               rtx_status = S_CI_SFD;
-              cc2420_strobe_tx();
+              // cc2420_strobe_tx();
               // }
               tx_counter++;
               write_ram(CC2420_RAM_TXFIFO, sizeof(cc2420_header_t)+sizeof(rtx_setting_t), &tx_counter, 1);
               if (tx_counter == PREAMBLE_PACKET_LENGTH) {
-                if (swap_tx_buf != NULL) {
+                if ((tx_setting->size != 0) && (swap_tx_buf != NULL)) {
                   rtx_status = S_TX_SFD;
                   p_tx_buf = swap_tx_buf;
                   cc2420_load_tx();
                   swap_tx_buf = NULL;
                   tx_counter = 0;
                 } else {
+                  radio_flush_tx();
+                  while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
                   radio_flush_tx();
                   rtx_status = S_RX_DETECT;
                   // TBCCR5 = TBCCR2 + LISTENING_TAIL;
@@ -771,20 +893,46 @@ module CC2420xRTxP {
                   TBCCTL5 = CCIE;
                 }
               }
+            } else {
+              // TODO: exception handling
+              radio_flush_tx();
+              while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
+              radio_flush_tx();
+              if (continuous_duplicate > DUPLICATE_COUNT) {
+                // TBCCTL1 &= ~(CCIE | CCIFG); 
+                TBCCTL1 = CAP;
+                rtx_status = S_RTX_IDLE;
+                // adding small tail to end the radio process
+                TBCCR5 = rtimer_arch_now_dco() + 128;
+                TBCCTL5 = CCIE;
+              } else {
+                rtx_status = S_RX_DETECT;
+                TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
+                TBCCTL5 = CCIE;
+              }
             }
           } else {
-            if (p_tx_buf != NULL) {
+            if ( (tx_setting->size != 0) && (p_tx_buf != NULL) ) {
+              /**
+               * no synchronous transmission, should not transmit further
               cc2420_strobe_tx();
+               */
               tx_counter++;
               if (tx_counter == PREAMBLE_PACKET_LENGTH) {
                 tx_setting->size--;
                 if (tx_setting->size != 0) {
-                  rtx_status = S_TX_SFD;
                   p_tx_buf = (message_t*)((uint8_t*)p_tx_buf + sizeof(message_t));
-                  cc2420_load_tx();
                   tx_counter = 0;
+                  // enable interrupt capture
+                  TBCCTL1 = CM_1 | CAP | SCS | CCIE;
+                  rtx_status = S_TX_DETECT;
+                  atomic {
+                    cc2420_signal_detect(TBCCR2);
+                  }
                 } else {
-                  radio_flush_tx();
+                  // radio_flush_tx();
+                  // enable interrupt capture
+                  TBCCTL1 = CM_1 | CAP | SCS | CCIE;
                   rtx_status = S_TX_DETECT;
                   // TBCCR5 = TBCCR2 + LISTENING_TAIL;
                   TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
@@ -792,10 +940,12 @@ module CC2420xRTxP {
                   TBCCTL5 = CCIE;
                 }
               } else {
-                radio_flush_tx();
-                printf_u16(1, &TB2_irq);
+                // radio_flush_tx();
+                // if (strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)) {
+                //   printf_u8(1, &tx_counter);
+                // }
                 rtx_status = S_TX_DETECT;
-                tx_counter = 0;
+                // tx_counter = 0;
                 atomic {
                   // cc2420_rx_start();
                   cc2420_signal_detect(TBCCR2);
@@ -803,6 +953,8 @@ module CC2420xRTxP {
               }
             } else {
               // radio_flush_tx();
+              // enable interrupt capture
+              TBCCTL1 = CM_1 | CAP | SCS | CCIE;
               rtx_status = S_RX_DETECT;
               // TBCCR5 = TBCCR2 + LISTENING_TAIL;
               TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
@@ -827,14 +979,20 @@ module CC2420xRTxP {
           TBCCTL3 &= ~(CCIE | CCIFG);
         // SFD abortion or reception exception
           radio_flush_tx();
+          // while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
+          // radio_flush_tx();
           radio_flush_rx();
-          rtx_status = S_RX_DETECT;
+          if ( (tx_setting->size != 0) && (p_tx_buf != NULL) ) {  
+            rtx_status = S_TX_DETECT;
+          } else {
+            rtx_status = S_RX_DETECT;
+          }
           abortion_duration = TBCCR3 - abortion_duration;
           rtx_time.channel_detection += abortion_duration;
           TBCCTL1 = CM_1 | CAP | SCS | CCIE;
           // TBCCR5 = TBCCR3 + LISTENING_TAIL;
           TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
-          detect_duration = TBCCR1;
+          detect_duration = TBCCR3;
           TBCCTL5 = CCIE;
           break;
         case 10:
@@ -843,18 +1001,24 @@ module CC2420xRTxP {
            printf_u8(1, &debug);
         #endif
         // disable timer first
+          TBCCTL1 &= ~(CCIE | CCIFG);
+          TBCCTL2 &= ~(CCIE | CCIFG);
+          TBCCTL3 &= ~(CCIE | CCIFG);
           TBCCTL5 &= ~(CCIE | CCIFG);
+          radio_flush_rx();
         // data frame is pending
-          if ( (tx_setting->size != 0) && (rtx_status == S_TX_DETECT) ) {  
+          if ( (tx_setting->size != 0) && (rtx_status == S_TX_DETECT) ) {
+            // enable interrupt capture
+            // TBCCTL1 = CM_1 | CAP | SCS | CCIE;  
             rtx_status = S_TX_SFD;
             cc2420_strobe_tx();
             cc2420_load_tx();
             return;
           }
-          TBCCTL1 &= ~(CCIE | CCIFG);
-          TBCCTL2 &= ~(CCIE | CCIFG);
-          TBCCTL3 &= ~(CCIE | CCIFG);
-          radio_flush_rx();
+          // TBCCTL1 &= ~(CCIE | CCIFG);
+          // TBCCTL2 &= ~(CCIE | CCIFG);
+          // TBCCTL3 &= ~(CCIE | CCIFG);
+          // radio_flush_rx();
         // no packet in channel is detected
           detect_duration = TBCCR5 - detect_duration;
           rtx_time.channel_detection += detect_duration;
@@ -918,6 +1082,7 @@ module CC2420xRTxP {
         // the rx should be disabled to eliminate the influence of received signal interrupt
         // cc2420_rx_stop();
         rtx_status = S_TX_SFD;
+        rtx_time.channel_detection += rtimer_arch_now_dco() - detect_duration;
         cc2420_strobe_tx();
         cc2420_load_tx();
         return;
@@ -932,7 +1097,7 @@ module CC2420xRTxP {
         detect_duration = rtimer_arch_now_dco() - detect_duration;
         rtx_time.channel_detection += detect_duration;
         rtx_status = S_RTX_IDLE;
-        TBCCTL1 &= ~(CCIE | CCIFG);
+        // TBCCTL1 &= ~(CCIE | CCIFG);
         TBCCTL1 = CAP;
         signal LplTime.timeRadio(&rtx_time);
         if (m_rx_buf.received) {
@@ -954,6 +1119,7 @@ module CC2420xRTxP {
       if ( rtx_status == S_TX_DETECT ) {
         // cc2420_rx_stop();
         rtx_status = S_TX_SFD;
+        rtx_time.channel_detection += rtimer_arch_now_dco() - detect_duration;
         cc2420_strobe_tx();
         cc2420_load_tx();
         return;
@@ -963,7 +1129,7 @@ module CC2420xRTxP {
         detect_duration = rtimer_arch_now_dco() - detect_duration;
         rtx_time.channel_detection += detect_duration;
         rtx_status = S_RTX_IDLE;
-        TBCCTL1 &= ~(CCIE | CCIFG);
+        // TBCCTL1 &= ~(CCIE | CCIFG);
         TBCCTL1 = CAP;
         signal LplTime.timeRadio(&rtx_time);
         if (m_rx_buf.received) {
@@ -980,6 +1146,8 @@ module CC2420xRTxP {
 
   static inline void cc2420_begin_rx() {
     uint8_t* p_header = get_packet_header( m_rx_buf.p_rx_buf );
+    uint16_t crc = 0xFFFF;
+    uint8_t crc_header_size = CC2420_X_HEADER_LENGTH - 4;
     rtx_status = S_RX_RECEIVE;
 
     while (((P1IN & (1 << 3)) == 0)) {
@@ -1031,6 +1199,21 @@ module CC2420xRTxP {
 
       fast_continue_read_one( p_header + rx_readbytes );
 
+      if (rx_readbytes <= crc_header_size) {
+        uint8_t tmp_val = *(p_header + rx_readbytes);
+        uint8_t i;
+        crc = crc ^ (tmp_val << 8);
+        for(i = 0; i < 8; i++) {
+          if (crc & 0x8000)
+            crc = (crc << 1) ^ CRC_POLY;
+          else
+            crc <<= 1;
+        }
+        crc &= 0xFFFF;
+        if (rx_readbytes == crc_header_size)
+          crc ^= 0x0000;
+      }
+
       rx_readbytes++;
       
       /** deal with the packet header here **/
@@ -1039,12 +1222,19 @@ module CC2420xRTxP {
         // receive the data, acknowledge the packet, else abort the ongoing ack transmission
         if ( (!m_ptr_setting->ack) 
          && (m_ptr_setting->addr != TOS_NODE_ID)
-         && (m_ptr_setting->addr != OPPORTUNISTIC_ROUTING_ADDR)
-         && (m_ptr_setting->metric - local_metric < m_ptr_setting->progress) ) {
+         && (! ((m_ptr_setting->addr == OPPORTUNISTIC_ROUTING_ADDR)
+             && (m_ptr_setting->metric - local_metric > m_ptr_setting->progress))) ) {
           ack_mark = FALSE;
         } else {
           ack_mark = TRUE;
         }
+        if (crc != m_ptr_setting->crc) {
+          ack_mark = FALSE;
+          printf_u16(1, &crc);
+        }
+        //  else {
+        //    printf_u16(1, &crc);
+        //  }
       }
     }
     CC2420_SPI_DISABLE();
@@ -1065,7 +1255,8 @@ module CC2420xRTxP {
       rtx_setting_t* m_ptr_setting = (rtx_setting_t*)get_packet_setting(m_rx_buf.p_rx_buf);
 
       if (!ack_mark) {
-        radio_flush_tx();
+        // no ack transmission triggered
+        // radio_flush_tx();
         if (m_ptr_setting->addr != AM_BROADCAST_ADDR) {
           // overheard packet
           signal Snoop.receive(m_rx_buf.p_rx_buf, (void*)get_packet_payload(m_rx_buf.p_rx_buf), pkt_length);
@@ -1118,6 +1309,8 @@ module CC2420xRTxP {
         }
       }
       if (!duplicate) {
+        // clear the continuous duplicate counter
+        continuous_duplicate = 0;
         // set the rx setting
         m_ptr_setting->hop--;
         /** too long to hard copy the setting
@@ -1135,12 +1328,12 @@ module CC2420xRTxP {
           // no extra buffer for further data packet receiving, deal with this after ACK is transmitted
         }
       } else {
-        //printf_u8(1, &continuous_duplicate);
+        // printf_u8(1, &continuous_duplicate);
         continuous_duplicate++;
-        if (continuous_duplicate > DUPLICATE_COUNT) {
-          TBCCTL1 &= ~(CCIE | CCIFG); 
-          TBCCTL1 = CAP;
-        }
+        // if (continuous_duplicate > DUPLICATE_COUNT) {
+        //  TBCCTL1 &= ~(CCIE | CCIFG); 
+        //  TBCCTL1 = CAP;
+        // }
         // received duplicate
         signal Snoop.receive(m_rx_buf.p_rx_buf, (void*)get_packet_payload(m_rx_buf.p_rx_buf), pkt_length);
       }
@@ -1148,6 +1341,8 @@ module CC2420xRTxP {
       // radio_flush_rx();
     } else {
       radio_flush_tx();
+      // while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
+      // radio_flush_tx();
       radio_flush_rx();
       // the ack waiting timer is running, deal with this after ACK is transmitted
     }
@@ -1175,7 +1370,30 @@ module CC2420xRTxP {
     // TBCCTL1 &= ~CCIFG;
     detect_duration = rtimer_arch_now_dco() - detect_duration;
     turn_around = rtimer_arch_now_dco();
-    strobe( CC2420_SACK ); 
+    // turn_around = TBCCR1;
+    // printf_u16(1, &detect_duration);
+    if (ack_mark) {
+/*
+      asm volatile ("nop");
+      asm volatile ("nop");
+      asm volatile ("nop");
+      asm volatile ("nop");
+      asm volatile ("nop");
+      asm volatile ("nop");
+      asm volatile ("nop");
+      asm volatile ("nop");
+*/
+      strobe( CC2420_SACK );
+      // enable rising edge interrupt capture to receive ACK
+      TBCCTL1 = CM_1 | CAP | SCS | CCIE;
+/*
+      {
+        uint8_t debug_mark = 222;
+        printf_u8(1, &debug_mark);
+      }
+*/
+    }
+    // radio_flush_tx(); 
 #ifdef RADIO_X_DEBUG
     // time_interval = rtimer_arch_now_dco();
     // while (!(P4IN & (1 << 1)));
@@ -1196,6 +1414,10 @@ module CC2420xRTxP {
     if (strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)) {
       radio_flush_tx();
       // TODO : exception of radio tx
+      rtx_status = S_TX_DETECT; 
+      TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
+      detect_duration = rtimer_arch_now_dco();
+      TBCCTL5 = CCIE;
     }
   }
 
@@ -1204,7 +1426,10 @@ module CC2420xRTxP {
     // radio_flush_rx();
     // TBCCTL1 &= ~CCIFG;
     detect_duration = rtimer_arch_now_dco() - detect_duration;
+    // turn_around = rtimer_arch_now_dco();
     strobe( CC2420_STXON );
+    // enable rising edge interrupt capture
+    TBCCTL1 = CM_1 | CAP | SCS | CCIE;
     rtx_time.channel_detection += detect_duration;
   }
 
@@ -1214,6 +1439,8 @@ module CC2420xRTxP {
     // TBCCTL1 &= ~CCIFG;
     detect_duration = rtimer_arch_now_dco() - detect_duration;
     turn_around = rtimer_arch_now_dco();
+    printf_u16(1, &detect_duration);
+    TBCCTL1 = CM_1 | CAP | SCS | CCIE;
     TBCCR2 = rtimer_arch_now_dco() + rtx_time.turnaround_time + rtx_time.ack_time;
     // TBCCR2 = turn_around + 4096;
     TBCCTL2 = CCIE;
@@ -1244,8 +1471,9 @@ module CC2420xRTxP {
           tx_counter++;
         } else {
           radio_flush_tx();
+          while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
+          radio_flush_tx();
           rtx_status = S_TX_DETECT;
-          printf_u8(1, &type);
           // TBCCR5 = TBCCR1 + LISTENING_TAIL;
           TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
           detect_duration = TBCCR1;
@@ -1266,6 +1494,8 @@ module CC2420xRTxP {
             }
           } else {
             radio_flush_tx();
+            while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
+            radio_flush_tx();
             rtx_status = S_RX_DETECT;
             // TBCCR5 = TBCCR1 + LISTENING_TAIL;
             TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
@@ -1283,6 +1513,8 @@ module CC2420xRTxP {
     if (rtx_status == S_CI_ACK) {
       // TODO: stop transmission or continuously transmission till rereach the maximum counter
       if (tx_counter == PREAMBLE_PACKET_LENGTH) {
+        radio_flush_tx();
+        while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
         radio_flush_tx();
         rtx_status = S_RX_DETECT;
         // TBCCR5 = TBCCR1 + LISTENING_TAIL;
@@ -1322,6 +1554,8 @@ module CC2420xRTxP {
           }
         } else {
           radio_flush_tx();
+          // while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
+          // radio_flush_tx();
           rtx_status = S_RX_DETECT;
           // TBCCR5 = TBCCR1 + LISTENING_TAIL;
           TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
@@ -1342,6 +1576,8 @@ module CC2420xRTxP {
             } 
           } else {
             radio_flush_tx();
+            // while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
+            // radio_flush_tx();
             rtx_status = S_RX_DETECT;
             // TBCCR5 = TBCCR1 + LISTENING_TAIL;
             TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;
@@ -1361,6 +1597,8 @@ module CC2420xRTxP {
 
     if (rtx_status == S_CI_ACK) {
       radio_flush_tx();
+      // while (!(strobe(CC2420_SNOP) & BV(CC2420_TX_UNDERFLOW)));
+      // radio_flush_tx();
       rtx_status = S_RX_DETECT;
       // TBCCR5 = TBCCR1 + LISTENING_TAIL;
       TBCCR5 = rtimer_arch_now_dco() + LISTENING_TAIL;

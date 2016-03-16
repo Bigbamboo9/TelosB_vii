@@ -44,6 +44,8 @@
  * @date   June 6 2005
  */
 
+#include "serial_fast_print.h"
+
 module RadioCountToLedsC @safe() {
   uses {
     interface Leds;
@@ -66,16 +68,26 @@ implementation {
   uint16_t counter = 0;
  
   event void Boot.booted() {
+    // uint16_t sr_value;
     // locked = FALSE;
     locked = TRUE;
     memset((uint8_t*)(&packet), 0x0, sizeof(message_t));
     uart_init();
     call AMControl.start();
     call MilliTimer.startPeriodic(1024);
+/*
+    call Leds.led1On();
+    sr_value = READ_SR;
+    printf_u16(1, &sr_value);
+    atomic {
+      sr_value = READ_SR;
+      printf_u16(1, &sr_value);
+    }
+*/
   }
  
   event void MilliTimer.fired() {
-    uint16_t dest_addr = 0x0;
+    uint16_t dest_addr = 0x01;
     // call Leds.led2Toggle();
     counter++;
     if (locked)
@@ -118,7 +130,7 @@ implementation {
     if (&packet == bufPtr) {
       locked = FALSE;
       if (call Acks.wasAcked(bufPtr)) {
-        call Leds.led0Toggle();
+        // call Leds.led0Toggle();
       }
     }
   }

@@ -37,6 +37,8 @@
 #define DELTA_II               ((MSP430_CPU_SPEED) / 32768UL)
 /* Threshold of continueous duplicate to trigger force sleep */
 #define DUPLICATE_COUNT        2
+/* Header CRC polynomial parameter x^16+x^12+x^5+1 */
+#define CRC_POLY               0x1021
 
 
 /* -------------------------- Clock Capture ------------------------- */
@@ -89,6 +91,7 @@ typedef nx_struct {
   nx_bool ci;
   // ci : hop constraint
   nx_uint8_t hop;
+  nx_uint16_t crc;
   nx_uint8_t preamble_dsn;
 } rtx_setting_t;
 
@@ -172,6 +175,8 @@ static inline void msp430_sync_dco() {
     // wait for next Capture - and calculate difference
     while(!(TBCCTL6 & CCIFG));
     diff = TBCCR6 - last;
+
+    // printf_u16(1, &diff);
    
     /* resynchronize the DCO speed if not at target */
     if(DELTA_II < diff) {        /* DCO is too fast, slow it down */
@@ -189,6 +194,22 @@ static inline void msp430_sync_dco() {
       break;
     }
   }
+/*
+  {
+    uint8_t i;
+    TBCCTL6 &= ~CCIFG;
+    while(!(TBCCTL6 & CCIFG));
+    last = TBCCR6;
+    for (i = 0; i < 91; i++) {
+      TBCCTL6 &= ~CCIFG;
+      // wait for next Capture - and calculate difference
+      while(!(TBCCTL6 & CCIFG));
+      diff = TBCCR6;
+    }
+    diff = diff - last;
+    printf_u16(1, &diff);
+  }
+*/
 }
 
 

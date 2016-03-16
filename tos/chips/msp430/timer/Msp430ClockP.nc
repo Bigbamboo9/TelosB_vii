@@ -251,20 +251,24 @@ implementation
       asm("nop");
     }
 
-    CCTL2 = CCIS0 + CM0 + CAP;               // Define CCR2, CAP, ACLK
+    WDTCTL = WDTPW | WDTHOLD;
+    // start watch-dog timer 1s
+    // WDTCTL = WDTPW | WDTCNTCL | WDTSSEL;
+
+    TACCTL2 = CCIS0 + CM0 + CAP + SCS;               // Define CCR2, CAP, ACLK
     TACTL = TASSEL1 + TACLR + MC1;           // SMCLK, continous mode
 
     while(1) {
-      CCTL2 &= ~CCIFG;
-      while ((CCTL2 & CCIFG) != CCIFG);
-      oldcapture = CCR2;
+      TACCTL2 &= ~CCIFG;
+      while ((TACCTL2 & CCIFG) != CCIFG);
+      oldcapture = TACCR2;
       
-      CCTL2 &= ~CCIFG;                       /* Capture occured, clear flag */
-      while((CCTL2 & CCIFG) != CCIFG);       /* Wait until capture occured! */
-      compare = CCR2 - oldcapture;           /* SMCLK difference */
+      TACCTL2 &= ~CCIFG;                       /* Capture occured, clear flag */
+      while((TACCTL2 & CCIFG) != CCIFG);       /* Wait until capture occured! */
+      compare = TACCR2 - oldcapture;           /* SMCLK difference */
 
       if(DELTA == compare) {
-        CCTL2 &= ~CCIFG;
+        TACCTL2 &= ~CCIFG;
         break;                               /* if equal, leave "while(1)" */
       } else if(DELTA < compare) {           /* DCO is too fast, slow it down */
         DCOCTL--;
@@ -279,7 +283,7 @@ implementation
       }
     }
 
-    CCTL2 = 0;                               /* Stop CCR2 function */
+    TACCTL2 = 0;                               /* Stop CCR2 function */
     TACTL = 0;                               /* Stop Timer_A */
 
     BCSCTL1 &= ~(DIVA1 + DIVA0);             /* remove /8 divisor from ACLK again */

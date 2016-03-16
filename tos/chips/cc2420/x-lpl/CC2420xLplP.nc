@@ -90,6 +90,7 @@ module CC2420xLplP {
       set_payload_length(msg, len);
       init_packet_metadata(msg);
       set_tx_setting(msg, &tx_status);
+      set_packet_header_crc(msg);
       disable_other_interrupts(&ie_status);
       signal RadioTimerUpdate.startRadioTime();
       // keep the dco accurate!
@@ -141,6 +142,7 @@ module CC2420xLplP {
         set_packet_header(msg+i, lpl_dsn);
         set_payload_length(msg+i, len);
         init_packet_metadata(msg+i);
+        set_packet_header_crc(msg+i);
         lpl_dsn++;
       }
       set_tx_setting(msg, &tx_status);
@@ -227,11 +229,13 @@ module CC2420xLplP {
       // TODO: compensate the frozen timer
       signal RadioTimerUpdate.counterUpdate(radio_time_perround+time+radio_start_time, rtx_time->calibration_factor);
       // signal RadioTimerUpdate.counterUpdate(radio_time_perround+time, rtx_time->calibration_factor);
+      // signal RadioTimerUpdate.triggerUpdate();
+      lpl_status = LPL_X_IDLE;
+      enable_other_interrupts(&ie_status);
+      // check the possible missing overflow
       signal RadioTimerUpdate.triggerUpdate();
       // restart the channel timer after RTx
       call SleepTimer.startOneShot(CC2420_LPL_PERIOD);
-      lpl_status = LPL_X_IDLE;
-      enable_other_interrupts(&ie_status);
     }
   }
 

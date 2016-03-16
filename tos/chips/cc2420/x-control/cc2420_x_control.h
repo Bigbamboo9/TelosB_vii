@@ -15,7 +15,7 @@
 #endif
 
 #ifndef CC2420_X_DEF_CHANNEL
-#define CC2420_X_DEF_CHANNEL 15
+#define CC2420_X_DEF_CHANNEL 26
 #endif
 
 
@@ -124,7 +124,7 @@ static inline void enable_other_interrupts(interrupt_status_t* status) {
 static inline void cc2420_tx_setting() {
   // all by defaults, set the tx_power
   uint16_t setting = get_register(CC2420_TXCTRL);
-  setting &= ( (CC2420_X_DEF_RFPOWER & 0x1F) << CC2420_TXCTRL_PA_LEVEL );
+  setting |= ( (CC2420_X_DEF_RFPOWER & 0x1F) << CC2420_TXCTRL_PA_LEVEL );
   set_register(CC2420_TXCTRL, setting);
 }
 // Operating frequency
@@ -191,6 +191,8 @@ static inline void radio_flush_tx() {
 }
 // Radio Initialization
 void cc2420_init() {
+  // it is possible the VREG_EN is oringinally high, set it as low first
+  // SET_VREG_INACTIVE();
   // initialize SPI registers
   cc2420_spi_init();
   // all input by default, set these as output
@@ -211,8 +213,13 @@ void cc2420_init() {
   SET_RESET_INACTIVE();
   // turn on the crystal oscillator
   strobe(CC2420_SXOSCON);
-  // oscillator stable
-  while ( !( strobe(CC2420_SNOP) & BV(CC2420_XOSC16M_STABLE) ) );
+  // crystal oscillator start-up time Typ. 1.0ms
+  clock_delay(4096);
+  // oscillator stable, otherwise restart the oscillator
+  while ( ( strobe(CC2420_SNOP) & BV(CC2420_XOSC16M_STABLE) ) == 0 ) {
+    strobe(CC2420_SXOSCON);
+    clock_delay(4096);
+  };
   // register settings
   cc2420_mod_setting();
   cc2420_sec_setting();

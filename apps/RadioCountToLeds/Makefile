@@ -1,7 +1,7 @@
 COMPONENT=RadioCountToLedsAppC
 
 CFLAGS += -DENABLE_X
-#CFLAGS += -DRADIO_X_DEBUG
+CFLAGS += -DRADIO_X_DEBUG
 CFLAGS += -DCC2420_X_DEF_RFPOWER=31
 
 # TOSH_DATA_LENGTH and CC2420_X_PACKET_SIZE should be the same to avoid memory operation error!
