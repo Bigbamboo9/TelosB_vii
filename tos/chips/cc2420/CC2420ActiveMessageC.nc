@@ -15,12 +15,15 @@ configuration CC2420ActiveMessageC {
     interface PacketAcknowledgements;
 
     interface OppoRouting;
-    
+
     interface AMSend[am_id_t id];
     interface Receive[am_id_t id];
     interface Receive as Snoop[am_id_t id];
     interface RadioBackoff[am_id_t amId];
     interface SendNotifier[am_id_t amId];
+
+    interface CC2420xControl;
+    interface CC2420xProfile;
   }
 }
 implementation {
@@ -31,7 +34,9 @@ implementation {
 
   RadioControl = CC2420xLplC;
   OppoRouting = CC2420xLplC;
-  
+  CC2420xControl = CC2420xLplC;
+  CC2420xProfile = CC2420xLplC;
+
   RadioBackoff = AM;
   AMSend = AM;
   SendNotifier = AM;
@@ -50,7 +55,7 @@ implementation {
   AM.LplxPacket -> CC2420xPacketP;
   AM.Packet -> CC2420xPacketP;
   AM.AMPacket -> CC2420xPacketP;
-  
+
   components LedsC;
   AM.Leds -> LedsC;
 }

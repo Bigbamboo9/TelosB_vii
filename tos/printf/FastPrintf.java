@@ -50,14 +50,14 @@ public class FastPrintf {
 					String ts = dateFormat.format(new Date());
 					System.out.print(ts+": ");
 					int_print = true;
-                                }else if (u8_print && u8_len == 0) {
+                }else if (u8_print && u8_len == 0) {
 					u8_len = b;
 				}else if (u16_print && u16_len == 0) {
 					u16_len = b;
-                                }else if (int_print && int_len == 0) {
+                }else if (int_print && int_len == 0) {
 					int_len = b;
 				}else if (u8_print && u8_len != 0) {
-                                        low = b & 0x000000ff;
+                    low = b & 0x000000ff;
 					System.out.print(low + " ");
 					u8_len--;
 					if (u8_len == 0) {

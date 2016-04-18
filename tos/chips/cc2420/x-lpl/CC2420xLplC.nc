@@ -7,6 +7,8 @@ configuration CC2420xLplC {
   provides interface OppoRouting;
 
   provides interface RadioTimerUpdate;
+  provides interface CC2420xControl;
+  provides interface CC2420xProfile;
 } implementation {
   components MainC;
   components CC2420xLplP;
@@ -19,10 +21,12 @@ configuration CC2420xLplC {
   Snoop = CC2420xRTxP;
   RadioTimerUpdate = CC2420xLplP;
   OppoRouting = CC2420xRTxP;
+  CC2420xControl = CC2420xLplP;
+  CC2420xProfile = CC2420xRTxP;
 
   MainC.SoftwareInit -> CC2420xLplP;
   MainC.SoftwareInit -> CC2420xRTxP;
-  
+
   CC2420xLplP.SubSend -> CC2420xRTxP;
   CC2420xLplP.SubReceive -> CC2420xRTxP;
   CC2420xLplP.LplTime -> CC2420xRTxP;

@@ -1,0 +1,2 @@
+Default 8.95
+Synchronous 17.65

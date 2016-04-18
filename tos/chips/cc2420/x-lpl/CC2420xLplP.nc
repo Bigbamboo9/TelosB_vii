@@ -1,4 +1,5 @@
 #include "cc2420_x_control.h"
+#include "cc2420_x_spi.h"
 #include "cc2420_x_packet.h"
 #include "cc2420_x_rtx.h"
 #include "cc2420_x_lpl.h"
@@ -12,6 +13,7 @@ module CC2420xLplP {
   provides interface BulkSend;
   provides interface Receive;
   provides interface RadioTimerUpdate;
+  provides interface CC2420xControl;
 
   uses interface LplSend as SubSend;
   uses interface LplReceive as SubReceive;
@@ -26,6 +28,7 @@ module CC2420xLplP {
   rtx_setting_t tx_status;
   bool bulk_or_not;
   uint8_t lpl_dsn;
+  uint8_t tx_size;
   uint32_t radio_time_perround;
   uint32_t radio_start_time;
 
@@ -57,18 +60,43 @@ module CC2420xLplP {
     return SUCCESS;
   }
 
+  command void CC2420xControl.turnRadioOn() {
+    if (lpl_status == LPL_X_IDLE) {
+      atomic {
+        if (call SubReceive.rxOn() != SUCCESS) {
+          call SleepTimer.startOneShot(CC2420_LPL_PERIOD);
+          return;
+        }
+        call SleepTimer.stop();
+        lpl_status = LPL_X_RX;
+        disable_other_interrupts(&ie_status);
+        signal RadioTimerUpdate.startRadioTime();
+        call SubReceive.rxInit();
+        call SubReceive.rxEnable();
+        // call SubReceive.txDetect();
+      }
+    }
+  }
+
+  command void CC2420xControl.setChannel(uint8_t channel) {
+    uint16_t setting = get_register(CC2420_FSCTRL);
+    setting &= 0xFE00;
+    setting |= ( 0x1FFF & (357 + 5 * (channel - 11)) );
+    set_register(CC2420_FSCTRL, setting);
+  }
+
   event void SleepTimer.fired() {
     if (lpl_status == LPL_X_IDLE) {
       atomic {
         if (call SubReceive.rxOn() != SUCCESS) {
           call SleepTimer.startOneShot(CC2420_LPL_PERIOD);
-          return; 
+          return;
         }
         lpl_status = LPL_X_RX;
         disable_other_interrupts(&ie_status);
         signal RadioTimerUpdate.startRadioTime();
-        // keep the dco accurate!
-        msp430_sync_dco();
+        // keep the dco accurate! However, the timely adjustment surprisingly make the dco unstable. Disable it.
+        // msp430_sync_dco();
         call SubReceive.rxInit();
         // radio_start_time = rtimer_arch_now_dco();
         // restart the radio from idle to rx mode, avoid the early comming SFD
@@ -93,8 +121,8 @@ module CC2420xLplP {
       set_packet_header_crc(msg);
       disable_other_interrupts(&ie_status);
       signal RadioTimerUpdate.startRadioTime();
-      // keep the dco accurate!
-      msp430_sync_dco();
+      // keep the dco accurate! However, the timely adjustment surprisingly make the dco unstable. Disable it.
+      // msp430_sync_dco();
       call SubReceive.rxInit();
       // start the radio at low-layer to reduce the change of early comming SFD
       // cc2420_rx_start();
@@ -115,12 +143,12 @@ module CC2420xLplP {
       }
     }
   }
-  
+
   command uint8_t Send.maxPayloadLength() {
     // TODO: fixed packet size minus the header and footer size
     return (CC2420_X_PACKET_SIZE-1-sizeof(rtx_setting_t));
   }
-  
+
   command void* Send.getPayload(message_t* msg, uint8_t len) {
     // TODO: return the second byte of payload as actrual payload, the first byte set as the length
     return get_packet_payload(msg);
@@ -128,17 +156,17 @@ module CC2420xLplP {
 
   command error_t BulkSend.send(message_t* msg, uint8_t len) {
     uint8_t i;
-    
+
     if (lpl_status != LPL_X_IDLE) {
       return EBUSY;
     }
     call SleepTimer.stop();
     atomic {
       rtx_setting_t* p_ts = (rtx_setting_t*)get_packet_setting(msg);
-      uint8_t size = p_ts->size;
+      tx_size = p_ts->size;
       lpl_status = LPL_X_TX;
       bulk_or_not = TRUE;
-      for (i = 0; i < size; i++) {
+      for (i = 0; i < tx_size; i++) {
         set_packet_header(msg+i, lpl_dsn);
         set_payload_length(msg+i, len);
         init_packet_metadata(msg+i);
@@ -179,7 +207,7 @@ module CC2420xLplP {
     if (!bulk_or_not) {
       signal Send.sendDone(msg, error);
     } else {
-      signal BulkSend.sendDone(msg, error);
+      signal BulkSend.sendDone(msg-tx_size+1, error);
     }
   }
 
@@ -193,9 +221,12 @@ module CC2420xLplP {
       }
     }
     // deal with the received packets, signal up-layer packets received
-    for (i=0; i<size; i++) {
-      signal Receive.receive(msg+i, get_packet_payload(msg+i), SUCCESS);
-    }
+    // printf_u8(1, &size);
+    // TODO : signal multiple event may not all be handled
+    // for (i=0; i<size; i++) {
+    //   signal Receive.receive(msg+i, get_packet_payload(msg+i), SUCCESS);
+    // }
+    signal Receive.receive(msg, get_packet_payload(msg), SUCCESS);
     call SubReceive.rxBuffSet();
   }
 
@@ -214,9 +245,9 @@ module CC2420xLplP {
       rtx_time->ack_total_time += rtx_time->pkt_ack * rtx_time->ack_time;
       rtx_time->turnaround_total_time += rtx_time->pkt_turnaround * rtx_time->turnaround_time;
 
-      print_high = rtx_time->channel_detection >> 16;
+      print_high = radio_time_perround >> 16;
       // printf_u16(1, &print_high);
-      print_low = rtx_time->channel_detection & 0xFFFF;
+      print_low = radio_time_perround & 0xFFFF;
       // printf_u16(1, &print_low);
 
     }
@@ -238,6 +269,10 @@ module CC2420xLplP {
       call SleepTimer.startOneShot(CC2420_LPL_PERIOD);
     }
   }
+
+  default event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len) { return msg; }
+  default event void Send.sendDone(message_t* msg, error_t err) {}
+  default event void BulkSend.sendDone(message_t* msg, error_t err) {}
 
   default event void RadioTimerUpdate.startRadioTime() {}
   default event void RadioTimerUpdate.triggerUpdate() {}

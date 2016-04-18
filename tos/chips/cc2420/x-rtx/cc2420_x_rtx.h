@@ -8,7 +8,7 @@
 /** Get the realtime DCO counter **/
 #define rtimer_arch_now_dco()  (TBR)
 /** Maximum size of data receiving buffer **/
-#define RX_BUFFER_SIZE         7
+#define RX_BUFFER_SIZE         35
 /** Length of IEEE 802.15.4 ACK frame **/
 #define ACK_LENGTH             5
 /** Opportunistic routing address **/
@@ -40,6 +40,18 @@
 /* Header CRC polynomial parameter x^16+x^12+x^5+1 */
 #define CRC_POLY               0x1021
 
+/* fixed the gap between Tx falling edge sfd and Rx falling edge sfd */
+#define RTX_SFD_DRIFT           16UL
+/* fixed turn around time */
+#define FIXED_TURN_AROUND_TICK  1522UL
+/* fixed dco drift calculation ticks */
+#define DCO_DRIFT_CAL           780UL
+/* fixed ack duration time */
+#define FIXED_ACK_TICK          807UL
+/* fixed time before turn_around record */
+#define EXTRA_EXECUTE_TICK_RTX  630UL  // with printf debug state
+#define EXTRA_EXECUTE_TICK_ACK  917UL
+#define EXTRA_EXECUTE_TICK_WAIT 596UL
 
 /* -------------------------- Clock Capture ------------------------- */
 /**
@@ -144,8 +156,10 @@ static inline void timer_initialization() {
   // TimerB4 is reserved
   TBCCTL4 = 0;
   // TimerB6 and TimerA2 for time calibration, capture mode
-  TBCCTL6 = CAP;
-  TACCTL2 = CAP;
+  // TBCCTL6 = CAP;
+  // TACCTL2 = CAP;
+  TBCCTL6 = 0;
+  TACCTL2 = 0;
   // TimerB5 for receiving and transmiting tail timer, compare mode
   TBCCTL5 = 0;
 }
@@ -212,6 +226,128 @@ static inline void msp430_sync_dco() {
 */
 }
 
+/** 
+ * manually inline aready
+ **
+static inline void dco_drift_update(uint32_t* t_cap) {
+  uint32_t t_next_cap[2];
+  uint8_t i;
+
+  CAPTURE_NEXT_CLOCK_TICK(t_cap[0], t_cap[1]);
+
+  // keep the duration for 7 bytes
+  TACCTL2 = CCIS0 | CM_1 | CAP | SCS;
+  for (i = 0; i < 7; i++) {
+    TACCTL2 &= ~CCIFG;
+    while (!(TACCTL2 & CCIFG));
+  }
+  TACCTL2 = 0;
+
+  CAPTURE_NEXT_CLOCK_TICK(t_next_cap[0], t_next_cap[1]);
+  
+  t_cap[0] = t_next_cap[0] - t_cap[0];
+  t_cap[1] = t_next_cap[1] - t_cap[1];
+}
+*/
+
+/** 
+ * the multiplication is temerally crash, do not know why.
+ **
+static inline void dco_drift_test(uint32_t t_cap, uint32_t ticks) {
+  uint32_t actual_ticks = 0;
+
+  actual_ticks = ticks * t_cap;
+  {
+    uint32_t tmp_val = actual_ticks;
+    uint16_t debug_time = tmp_val;
+    printf_u16(1, &debug_time);
+    debug_time = actual_ticks >> 16;
+    printf_u16(1, &debug_time);
+  }
+}
+*/
+
+/** 
+ * avoid uint32_t type multiplication and division
+ * instead by bit shift compensation
+ **
+static inline bool dco_drift_compensate(uint32_t* t_cap, uint32_t ticks) {
+  uint32_t compensate_ticks = 0;
+  uint32_t actual_ticks = 0;
+
+  uint32_t factor = t_cap[0];
+
+  {
+    uint16_t debug_cap[2];
+    debug_cap[0] = t_cap[0];
+    debug_cap[1] = t_cap[1];
+    printf_u16(2, debug_cap);
+    debug_cap[0] = ticks;
+    debug_cap[1] = ticks >> 16;
+    printf_u16(2, debug_cap);
+  }
+
+  // actual_ticks = ticks * t_cap[0];
+  actual_ticks = ticks * factor;
+  {
+    uint32_t tmp_val = actual_ticks;
+    uint16_t debug_time = tmp_val;
+    printf_u16(1, &debug_time);
+    debug_time = actual_ticks >> 16;
+    printf_u16(1, &debug_time);
+  }
+  
+  // 7 tick is the guarantee time for those actual frequency is higher than reference
+  compensate_ticks = ticks - (actual_ticks >> 10) + 7;
+  // extend the compensation to instruction address interval
+  compensate_ticks <<= 1;
+
+  if (compensate_ticks <= 30) {
+
+    asm volatile ("add %[d], r0" : : [d] "m" (compensate_ticks));
+
+    asm volatile ("nop");
+    asm volatile ("nop");
+    asm volatile ("nop");
+    asm volatile ("nop");
+    asm volatile ("nop");
+    asm volatile ("nop");
+    asm volatile ("nop");
+    asm volatile ("nop");
+    asm volatile ("nop");
+    asm volatile ("nop");
+    asm volatile ("nop");
+    asm volatile ("nop");
+    asm volatile ("nop");
+    asm volatile ("nop");
+    asm volatile ("nop");
+
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+*/
+
+static inline void sfd_delta_compensate() {
+  // compensate for 16 ticks sfd mismatch
+  asm volatile ("nop");
+  asm volatile ("nop");
+  asm volatile ("nop");
+  asm volatile ("nop");
+  asm volatile ("nop");
+  asm volatile ("nop");
+  asm volatile ("nop");
+  asm volatile ("nop");
+  asm volatile ("nop");
+  asm volatile ("nop");
+  asm volatile ("nop");
+  asm volatile ("nop");
+  asm volatile ("nop");
+  asm volatile ("nop");
+  asm volatile ("nop");
+  asm volatile ("nop");
+}
 
 /** Detect the potential ongoing packet transmission by being awake and checking SFD for two adjacent SFD period **/
 //static inline void cc2420_signal_detect(uint16_t time);

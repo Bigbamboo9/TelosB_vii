@@ -1,19 +1,19 @@
 // $Id: RadioCountToLedsC.nc,v 1.6 2008/06/24 05:32:31 regehr Exp $
 
 /*									tab:4
- * "Copyright (c) 2000-2005 The Regents of the University  of California.  
+ * "Copyright (c) 2000-2005 The Regents of the University  of California.
  * All rights reserved.
  *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose, without fee, and without written agreement is
  * hereby granted, provided that the above copyright notice, the following
  * two paragraphs and the author appear in all copies of this software.
- * 
+ *
  * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY FOR
  * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT
  * OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE UNIVERSITY OF
  * CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
@@ -23,28 +23,26 @@
  * Copyright (c) 2002-2003 Intel Corporation
  * All rights reserved.
  *
- * This file is distributed under the terms in the attached INTEL-LICENSE     
+ * This file is distributed under the terms in the attached INTEL-LICENSE
  * file. If you do not find these files, copies can be found by writing to
- * Intel Research Berkeley, 2150 Shattuck Avenue, Suite 1300, Berkeley, CA, 
+ * Intel Research Berkeley, 2150 Shattuck Avenue, Suite 1300, Berkeley, CA,
  * 94704.  Attention:  Intel License Inquiry.
  */
- 
+
 #include "Timer.h"
 #include "RadioCountToLeds.h"
 #include "serial_fast_print.h"
- 
+
 /**
- * Implementation of the RadioCountToLeds application. RadioCountToLeds 
- * maintains a 4Hz counter, broadcasting its value in an AM packet 
- * every time it gets updated. A RadioCountToLeds node that hears a counter 
- * displays the bottom three bits on its LEDs. This application is a useful 
+ * Implementation of the RadioCountToLeds application. RadioCountToLeds
+ * maintains a 4Hz counter, broadcasting its value in an AM packet
+ * every time it gets updated. A RadioCountToLeds node that hears a counter
+ * displays the bottom three bits on its LEDs. This application is a useful
  * test to show that basic AM communication and timers work.
  *
  * @author Philip Levis
  * @date   June 6 2005
  */
-
-#include "serial_fast_print.h"
 
 module RadioCountToLedsC @safe() {
   uses {
@@ -66,13 +64,21 @@ implementation {
 
   bool locked;
   uint16_t counter = 0;
- 
+
   event void Boot.booted() {
     // uint16_t sr_value;
-    // locked = FALSE;
-    locked = TRUE;
+    // uint16_t tick_val_0;
+    // uint16_t tick_val_1;
+    locked = FALSE;
+    // locked = TRUE;
     memset((uint8_t*)(&packet), 0x0, sizeof(message_t));
     uart_init();
+/*
+    tick_val_0 = TBR;
+    tick_val_1 = TBR;
+    printf_u16(1, &tick_val_0);
+    printf_u16(1, &tick_val_1);
+*/
     call AMControl.start();
     call MilliTimer.startPeriodic(1024);
 /*
@@ -85,7 +91,7 @@ implementation {
     }
 */
   }
- 
+
   event void MilliTimer.fired() {
     uint16_t dest_addr = 0x01;
     // call Leds.led2Toggle();
@@ -100,8 +106,8 @@ implementation {
       call LplxPacket.setPacketBulk(&packet, 1);
       rcm->counter = counter;
       rcm->time = call LocalTime.get();
-      // if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(radio_count_msg_t)) == SUCCESS)
-      if (call AMSend.send(dest_addr, &packet, sizeof(radio_count_msg_t)) == SUCCESS)
+      if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(radio_count_msg_t)) == SUCCESS)
+      // if (call AMSend.send(dest_addr, &packet, sizeof(radio_count_msg_t)) == SUCCESS)
         locked = TRUE;
     }
   }

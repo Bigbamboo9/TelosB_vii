@@ -12,13 +12,16 @@ configuration ActiveMessageC {
     interface AMPacket;
     interface LplxPacket;
     interface PacketAcknowledgements;
+
+    interface CC2420xControl;
+    interface CC2420xProfile;
   }
 }
 implementation {
   components CC2420ActiveMessageC as AM;
 
   StdControl = AM;
-  
+
   AMSend       = AM;
   Receive      = AM.Receive;
   Snoop        = AM.Snoop;
@@ -26,4 +29,6 @@ implementation {
   AMPacket     = AM;
   LplxPacket   = AM;
   PacketAcknowledgements = AM;
+  CC2420xControl = AM;
+  CC2420xProfile = AM;
 }

@@ -41,6 +41,6 @@ PFLAGS += -I../../tos/printf
 #CFLAGS += -I../../tos/system
 #CFLAGS += -I../../tos/printf
 
-include $(MAKERULES)
-#TINYOS_ROOT_DIR?=/Users/ZhichaoCao/Documents/czc/tinyos-main
-#include $(TINYOS_ROOT_DIR)/Makefile.include
+#include $(MAKERULES)
+TINYOS_ROOT_DIR?=/Users/ZhichaoCao/Documents/czc/tinyos-main
+include $(TINYOS_ROOT_DIR)/Makefile.include

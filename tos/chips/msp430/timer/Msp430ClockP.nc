@@ -56,7 +56,8 @@ implementation
   };
 
   async command mcu_power_t McuPowerOverride.lowestState() {
-    return MSP430_POWER_LPM3;
+    // return MSP430_POWER_LPM3;
+    return MSP430_POWER_LPM1;
   }
 
   command void Msp430ClockInit.defaultSetupDcoCalibrate()
